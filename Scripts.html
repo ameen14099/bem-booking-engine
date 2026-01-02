@@ -1,0 +1,524 @@
+<script>
+var currentUser=null,currentView='dashboard',allRecords=[],filteredRecords=[],selectedRecords=new Set(),dropdownOptions={},sortColumn='Date_Last_Touch',sortDirection='desc',currentCallRecord=null,callQueue=[],callQueueIndex=0,researchQueue=[],currentResearchItem=null;
+
+document.addEventListener('DOMContentLoaded',function(){loadUsers();var s=document.getElementById('searchInput');if(s)s.addEventListener('input',debounce(filterAndRenderRecords,300));['filterStatus','filterOwner','filterSource'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('change',filterAndRenderRecords);});});
+
+function loadUsers(){google.script.run.withSuccessHandler(function(users){var sel=document.getElementById('userSelect');users.forEach(function(u){var opt=document.createElement('option');opt.value=u.Name;opt.textContent=u.Name;opt.dataset.role=u.Role||'Team Member';sel.appendChild(opt);});}).withFailureHandler(handleError).getUsers();}
+
+function handleLogin(){var sel=document.getElementById('userSelect');if(!sel.value){showToast('Please select your name','error');return;}currentUser={name:sel.value,role:sel.options[sel.selectedIndex].dataset.role||'Team Member'};document.getElementById('userName').textContent=currentUser.name;document.getElementById('userRole').textContent=currentUser.role;document.getElementById('userAvatar').textContent=getInitials(currentUser.name);document.getElementById('loginScreen').style.display='none';document.getElementById('appContainer').classList.add('active');loadDropdownOptions();loadDashboard();}
+
+function logout(){currentUser=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('appContainer').classList.remove('active');}
+
+function loadDropdownOptions(){google.script.run.withSuccessHandler(function(opt){dropdownOptions=opt;populateAllDropdowns();}).withFailureHandler(function(e){console.error(e);}).getDropdownOptions();}
+
+function populateAllDropdowns(){var map={'fieldTimeZone':'Time_Zone','fieldTypeOfPhone':'Phone_Type','fieldLeadOwner':'Lead_Owner','fieldCategory':'Category','fieldMonthOfEvent':'Month','fieldWhatPitched':'What_Pitched','fieldCompanyState':'State','fieldVenueState':'State','fieldLeadStatus':'Lead_Status','fieldLeadSource':'Lead_Source','fieldMonthPitchEvent':'Month','fieldDhillCallList':'Yes_No','fieldDCallList':'Yes_No','fieldCreateMockContract':'Yes_No','fieldQuickCallNotes':'Quick_Call_Notes','fieldAddToBooklist':'Yes_No','fieldAddToPCL':'Yes_No'};for(var id in map){var el=document.getElementById(id);if(el&&dropdownOptions[map[id]]){el.innerHTML='<option value="">Select...</option>'+dropdownOptions[map[id]].map(function(v){return'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>';}).join('');}}var filters=[['filterStatus','Lead_Status','All Statuses'],['filterOwner','Lead_Owner','All Owners'],['filterSource','Lead_Source','All Sources']];filters.forEach(function(f){var el=document.getElementById(f[0]);if(el&&dropdownOptions[f[1]]){el.innerHTML='<option value="">'+f[2]+'</option>'+dropdownOptions[f[1]].map(function(v){return'<option value="'+escapeHtml(v)+'">'+escapeHtml(v)+'</option>';}).join('');}});}
+
+function switchView(view){currentView=view;selectedRecords.clear();updateBulkBar();document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.dataset.view===view);});var titles={dashboard:'Dashboard',leads:'All Leads',my:'My Leads',hot:'Hot Leads',followups:"Today's Follow Ups",contracts:'Contracts Review',dhill:'Dhill Review',booked:'Booked Shows',parking:'Archive',storage:'Storage',research:'Research Queue',calls:'Call History',eod:'Daily Check-in',analytics:'Analytics'};document.getElementById('pageTitle').textContent=titles[view]||'Leads';document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});if(view==='dashboard'){document.getElementById('dashboardView').classList.add('active');loadDashboard();}else if(view==='research'){document.getElementById('researchView').classList.add('active');loadResearchQueue();}else if(view==='eod'){document.getElementById('eodView').classList.add('active');loadEODReport();}else if(view==='calls'){document.getElementById('callsView').classList.add('active');loadCallHistory();}else if(view==='analytics'){document.getElementById('analyticsView').classList.add('active');loadAnalytics();}else{document.getElementById('listView').classList.add('active');loadListView(view);}}
+
+function loadDashboard(){google.script.run.withSuccessHandler(updateDashboardStats).withFailureHandler(function(e){console.error(e);}).getDashboardStats(currentUser?currentUser.name:'');google.script.run.withSuccessHandler(function(r){renderTodayQueue(r||[]);}).withFailureHandler(function(){renderTodayQueue([]);}).getLeads('followups',currentUser?currentUser.name:'');google.script.run.withSuccessHandler(function(r){renderRecentHotLeads((r||[]).slice(0,5));}).withFailureHandler(function(){renderRecentHotLeads([]);}).getLeads('hot',currentUser?currentUser.name:'');loadTeamPerformance();}
+
+function updateDashboardStats(s){document.getElementById('statPipeline').textContent=s.pipelineValue||'$0';document.getElementById('statFollowups').textContent=s.todayFollowUps||0;document.getElementById('statHot').textContent=s.hotLeads||0;document.getElementById('navLeadsCount').textContent=s.totalActive||0;document.getElementById('navHotCount').textContent=s.hotLeads||0;document.getElementById('navFollowupsCount').textContent=s.todayFollowUps||0;document.getElementById('navBookedCount').textContent=s.bookedCount||0;var c=document.getElementById('navContractsCount');if(c)c.textContent=s.contractsReview||0;var p=document.getElementById('navParkingCount');if(p)p.textContent=s.parkingLotCount||0;var st=document.getElementById('navStorageCount');if(st)st.textContent=s.storageCount||0;var my=document.getElementById('navMyCount');if(my)my.textContent=s.myLeadsCount||0;var dh=document.getElementById('navDhillCount');if(dh)dh.textContent=s.dhillCount||0;}
+
+function renderTodayQueue(records){var c=document.getElementById('todayQueue');document.getElementById('queueCount').textContent=records.length+' leads to contact';callQueue=records;if(!records.length){c.innerHTML='<div class="empty-state"><h3>All caught up!</h3><p>No follow-ups today</p></div>';return;}c.innerHTML=records.map(function(r,i){return'<div class="queue-item" onclick="openCallMode('+i+')"><div class="avatar">'+getInitials(r.Contact_Person||'U')+'</div><div class="queue-item-info"><div class="queue-item-name">'+escapeHtml(r.Contact_Person||'Unknown')+'</div><div class="queue-item-event">'+escapeHtml(r.Event_Name||'No event')+'</div></div><div class="queue-item-meta"><span class="queue-item-quote">'+formatCurrency(r.Active_Quote)+'</span><span class="status status-'+getStatusClass(r.Lead_Status)+'">'+escapeHtml(r.Lead_Status||'-')+'</span></div><div class="queue-item-actions"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openCallMode('+i+')">Call</button></div></div>';}).join('');}
+
+function renderRecentHotLeads(records){var c=document.getElementById('recentHotLeads');if(!records.length){c.innerHTML='<div class="empty-state"><p>No hot leads yet</p></div>';return;}c.innerHTML=records.map(function(r){return'<div class="lead-row" onclick="openLead('+r.rowIndex+')"><div class="avatar">'+getInitials(r.Contact_Person||'U')+'</div><div class="lead-row-info"><div class="lead-row-name">'+escapeHtml(r.Contact_Person||'Unknown')+'</div><div class="lead-row-email">'+escapeHtml(r.Event_Name||'-')+'</div></div><span class="quote">'+formatCurrency(r.Active_Quote)+'</span></div>';}).join('');}
+
+function loadTeamPerformance(){var period=document.getElementById('perfPeriod').value||'week';google.script.run.withSuccessHandler(renderTeamPerformance).withFailureHandler(function(e){console.error(e);renderTeamPerformance([]);}).getTeamPerformance(period);}
+
+function renderTeamPerformance(data){var c=document.getElementById('teamPerformance');if(!data||!data.length){c.innerHTML='<div class="perf-empty">No performance data for this period</div>';return;}c.innerHTML='<table class="perf-table"><thead><tr><th>Team Member</th><th>Calls</th><th>Conversations</th><th>Upgrades</th><th>Contracts</th><th>Avg Score</th></tr></thead><tbody>'+data.map(function(m){return'<tr><td><div class="perf-member"><div class="perf-avatar">'+getInitials(m.name)+'</div><span>'+escapeHtml(m.name)+'</span></div></td><td>'+(m.calls||0)+'</td><td>'+(m.conversations||0)+'</td><td>'+(m.upgrades||0)+'</td><td>'+(m.contracts||0)+'</td><td>'+(m.avgScore?m.avgScore.toFixed(1):'-')+'</td></tr>';}).join('')+'</tbody></table>';}
+
+function loadEODReport(){var d=new Date();document.getElementById('checkinDate').textContent=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});google.script.run.withSuccessHandler(function(m){document.getElementById('eodCalls').textContent=m.Calls_Made||0;document.getElementById('eodConversations').textContent=m.Conversations||0;document.getElementById('eodFollowups').textContent=m.Followups_Sent||0;document.getElementById('eodUpgrades').textContent=m.Leads_Upgraded||0;document.getElementById('eodContracts').textContent=m.Contracts_Generated||0;if(m.Training_Time)document.getElementById('eodTraining').value=m.Training_Time;if(m.Roleplay_Time)document.getElementById('eodRoleplay').value=m.Roleplay_Time;if(m.Call_Score_Self)document.getElementById('eodScore').value=m.Call_Score_Self;if(m.Roadblocks)document.getElementById('eodRoadblocks').value=m.Roadblocks;if(m.Special_Notes)document.getElementById('eodNotes').value=m.Special_Notes;}).withFailureHandler(function(e){console.error(e);}).getTodayMetrics(currentUser?currentUser.name:'');}
+
+function submitEOD(){var data={Training_Time:document.getElementById('eodTraining').value,Roleplay_Time:document.getElementById('eodRoleplay').value,Call_Score_Self:document.getElementById('eodScore').value,Roadblocks:document.getElementById('eodRoadblocks').value,Special_Notes:document.getElementById('eodNotes').value};showToast('Submitting EOD report...','info');google.script.run.withSuccessHandler(function(r){if(r.success)showToast('EOD report submitted!','success');else showToast('Error: '+(r.error||'Unknown'),'error');}).withFailureHandler(function(e){showToast('Failed to submit','error');console.error(e);}).submitEODReport(data,currentUser?currentUser.name:'');}
+
+function loadListView(view){google.script.run.withSuccessHandler(function(records){allRecords=records||[];filterAndRenderRecords();}).withFailureHandler(function(e){console.error(e);allRecords=[];filterAndRenderRecords();}).getLeads(view,currentUser?currentUser.name:'');}
+
+function filterAndRenderRecords(){var search=(document.getElementById('searchInput').value||'').toLowerCase();var status=document.getElementById('filterStatus').value;var owner=document.getElementById('filterOwner').value;var source=document.getElementById('filterSource').value;filteredRecords=allRecords.filter(function(r){if(status&&r.Lead_Status!==status)return false;if(owner&&r.Lead_Owner!==owner)return false;if(source&&r.Lead_Source!==source)return false;if(search){var s=[r.Contact_Person,r.Email,r.Event_Name,r.Company_Name,r.Phone_Number].join(' ').toLowerCase();if(s.indexOf(search)===-1)return false;}return true;});sortRecords();renderTable();}
+
+function sortRecords(){filteredRecords.sort(function(a,b){var aV=a[sortColumn]||'';var bV=b[sortColumn]||'';if(sortColumn==='Active_Quote'||sortColumn==='Old_Quote'){aV=parseFloat(String(aV).replace(/[^0-9.-]/g,''))||0;bV=parseFloat(String(bV).replace(/[^0-9.-]/g,''))||0;}if(aV<bV)return sortDirection==='asc'?-1:1;if(aV>bV)return sortDirection==='asc'?1:-1;return 0;});}
+
+function sortBy(col){if(sortColumn===col)sortDirection=sortDirection==='asc'?'desc':'asc';else{sortColumn=col;sortDirection='desc';}sortRecords();renderTable();}
+
+function renderTable(){var tbody=document.getElementById('leadsTableBody');document.getElementById('listCount').textContent=filteredRecords.length+' leads';if(!filteredRecords.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">No leads found</td></tr>';return;}tbody.innerHTML=filteredRecords.map(function(r){var chk=selectedRecords.has(r.rowIndex)?'checked':'';return'<tr onclick="openLead('+r.rowIndex+')"><td class="th-check" onclick="event.stopPropagation()"><input type="checkbox" '+chk+' onchange="toggleSelect('+r.rowIndex+',this.checked)"></td><td><div class="lead-cell"><div class="avatar">'+getInitials(r.Contact_Person||'U')+'</div><div><div class="lead-name">'+escapeHtml(r.Contact_Person||'Unknown')+'</div><div class="lead-email">'+escapeHtml(r.Email||'-')+'</div></div></div></td><td>'+escapeHtml(r.Event_Name||'-')+'</td><td><span class="status status-'+getStatusClass(r.Lead_Status)+'">'+escapeHtml(r.Lead_Status||'-')+'</span></td><td class="quote">'+formatCurrency(r.Active_Quote)+'</td><td>'+escapeHtml(r.Lead_Owner||'-')+'</td><td class="date">'+formatDate(r.Date_Last_Touch)+'</td><td class="row-actions" onclick="event.stopPropagation()"><button class="btn-icon" title="Call" onclick="quickCall('+r.rowIndex+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button><button class="btn-icon" title="Email" onclick="quickEmail('+r.rowIndex+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></button></td></tr>';}).join('');}
+
+function toggleSelect(rowIndex,checked){if(checked)selectedRecords.add(rowIndex);else selectedRecords.delete(rowIndex);updateBulkBar();}
+
+function toggleSelectAll(){var all=document.getElementById('selectAll').checked;selectedRecords.clear();if(all)filteredRecords.forEach(function(r){selectedRecords.add(r.rowIndex);});renderTable();updateBulkBar();}
+
+function updateBulkBar(){var bar=document.getElementById('bulkBar');document.getElementById('selectedCount').textContent=selectedRecords.size;bar.classList.toggle('visible',selectedRecords.size>0);}
+
+function bulkEmail(){var sel=filteredRecords.filter(function(r){return selectedRecords.has(r.rowIndex);});if(!sel.length){showToast('No leads selected','error');return;}var bcc=sel.map(function(r){return r.Email;}).filter(function(e){return e;}).join(',');if(!bcc){showToast('No valid emails','error');return;}var subject=encodeURIComponent('Following Up - Dewayne Hill Entertainment');window.open('https://mail.google.com/mail/?view=cm&fs=1&bcc='+bcc+'&su='+subject,'_blank');showToast('Opened email for '+sel.length+' leads','success');}
+
+function bulkGenerateContracts(){var sel=filteredRecords.filter(function(r){return selectedRecords.has(r.rowIndex);});if(!sel.length){showToast('No leads selected','error');return;}showToast('Generating '+sel.length+' contracts...','info');var done=0,errs=0;sel.forEach(function(rec){google.script.run.withSuccessHandler(function(res){done++;if(!res.success)errs++;if(done===sel.length){if(errs)showToast('Completed with '+errs+' errors','warning');else showToast('Generated '+sel.length+' contracts!','success');}}).withFailureHandler(function(){done++;errs++;if(done===sel.length)showToast('Completed with '+errs+' errors','warning');}).generateContract(rec.rowIndex,currentUser?currentUser.name:'');});}
+
+function openAddLead(){document.getElementById('modalTitle').textContent='Add Lead';document.getElementById('displayRecordId').textContent='';document.getElementById('leadForm').reset();document.getElementById('leadRowIndex').value='';document.getElementById('fieldLeadOwner').value=currentUser?currentUser.name:'';switchModalTab('contact');openModal('leadModal');}
+
+function openLead(rowIndex){google.script.run.withSuccessHandler(function(r){if(!r){showToast('Lead not found','error');return;}populateLeadForm(r);document.getElementById('modalTitle').textContent='Edit Lead';document.getElementById('displayRecordId').textContent=r.Record_ID||'';switchModalTab('contact');openModal('leadModal');}).withFailureHandler(function(e){console.error(e);showToast('Error loading lead','error');}).getLeadByRow(rowIndex);}
+
+function populateLeadForm(r){document.getElementById('leadRowIndex').value=r.rowIndex||'';document.getElementById('fieldRecordId').value=r.Record_ID||'';document.getElementById('fieldContactPerson').value=r.Contact_Person||'';document.getElementById('fieldEmail').value=r.Email||'';document.getElementById('fieldPhoneNumber').value=r.Phone_Number||'';document.getElementById('fieldTimeZone').value=r.Time_Zone||'';document.getElementById('fieldTypeOfPhone').value=r.Type_of_Phone||'';document.getElementById('fieldLeadOwner').value=r.Lead_Owner||'';document.getElementById('fieldEventName').value=r.Event_Name||'';document.getElementById('fieldCategory').value=r.Category||'';document.getElementById('fieldDateOfEvent').value=formatDateForInput(r.Date_of_Event);document.getElementById('fieldMonthOfEvent').value=r.Month_of_Event||'';document.getElementById('fieldNumberOfGuests').value=r.Number_of_Guests||'';document.getElementById('fieldWhatPitched').value=r.What_Pitched||'';document.getElementById('fieldActiveQuote').value=r.Active_Quote||'';document.getElementById('fieldOldQuote').value=r.Old_Quote||'';document.getElementById('fieldCompanyName').value=r.Company_Name||'';document.getElementById('fieldCompanyAddress1').value=r.Company_Address1||'';document.getElementById('fieldCompanyAddress2').value=r.Company_Address2||'';document.getElementById('fieldCompanyCity').value=r.Company_City||'';document.getElementById('fieldCompanyState').value=r.Company_State||'';document.getElementById('fieldCompanyZip').value=r.Company_Zip||'';document.getElementById('fieldVenueName').value=r.Venue_Name||'';document.getElementById('fieldVenueAddress1').value=r.Venue_Address1||'';document.getElementById('fieldVenueAddress2').value=r.Venue_Address2||'';document.getElementById('fieldVenueCity').value=r.Venue_City||'';document.getElementById('fieldVenueState').value=r.Venue_State||'';document.getElementById('fieldVenueZip').value=r.Venue_Zip||'';document.getElementById('fieldLeadStatus').value=r.Lead_Status||'';document.getElementById('fieldLeadSource').value=r.Lead_Source||'';document.getElementById('fieldDateNextFollowup').value=formatDateForInput(r.Date_Next_Followup);document.getElementById('fieldMonthPitchEvent').value=r.Month_Pitch_Event||'';document.getElementById('fieldDhillCallList').value=r.Dhill_Call_List||'';document.getElementById('fieldDCallList').value=r.D_Call_List||'';document.getElementById('fieldCreateMockContract').value=r.Create_Mock_Contract||'';document.getElementById('fieldQuickCallNotes').value=r.Quick_Call_Notes||'';document.getElementById('fieldAddToBooklist').value=r.Add_to_Booklist||'';document.getElementById('fieldAddToPCL').value=r.Add_to_PCL||'';document.getElementById('fieldAdditionalNotes').value=r.Additional_Notes||'';document.getElementById('fieldFollowupNotes').value=r.Followup_Notes||'';document.getElementById('fieldDateLastTouch').value=r.Date_Last_Touch||'';document.getElementById('fieldCreatedDate').value=r.Created_Date||'';document.getElementById('fieldCreatedBy').value=r.Created_By||'';document.getElementById('fieldLastModifiedBy').value=r.Last_Modified_By||'';document.getElementById('fieldPriorityScore').value=r.Priority_Score||'';document.getElementById('fieldContractId').value=r.Contract_ID||'';}
+
+function saveLead(){var rowIndex=document.getElementById('leadRowIndex').value;var data={Contact_Person:document.getElementById('fieldContactPerson').value,Email:document.getElementById('fieldEmail').value,Phone_Number:document.getElementById('fieldPhoneNumber').value,Time_Zone:document.getElementById('fieldTimeZone').value,Type_of_Phone:document.getElementById('fieldTypeOfPhone').value,Lead_Owner:document.getElementById('fieldLeadOwner').value,Event_Name:document.getElementById('fieldEventName').value,Category:document.getElementById('fieldCategory').value,Date_of_Event:document.getElementById('fieldDateOfEvent').value,Month_of_Event:document.getElementById('fieldMonthOfEvent').value,Number_of_Guests:document.getElementById('fieldNumberOfGuests').value,What_Pitched:document.getElementById('fieldWhatPitched').value,Active_Quote:document.getElementById('fieldActiveQuote').value,Old_Quote:document.getElementById('fieldOldQuote').value,Company_Name:document.getElementById('fieldCompanyName').value,Company_Address1:document.getElementById('fieldCompanyAddress1').value,Company_Address2:document.getElementById('fieldCompanyAddress2').value,Company_City:document.getElementById('fieldCompanyCity').value,Company_State:document.getElementById('fieldCompanyState').value,Company_Zip:document.getElementById('fieldCompanyZip').value,Venue_Name:document.getElementById('fieldVenueName').value,Venue_Address1:document.getElementById('fieldVenueAddress1').value,Venue_Address2:document.getElementById('fieldVenueAddress2').value,Venue_City:document.getElementById('fieldVenueCity').value,Venue_State:document.getElementById('fieldVenueState').value,Venue_Zip:document.getElementById('fieldVenueZip').value,Lead_Status:document.getElementById('fieldLeadStatus').value,Lead_Source:document.getElementById('fieldLeadSource').value,Date_Next_Followup:document.getElementById('fieldDateNextFollowup').value,Month_Pitch_Event:document.getElementById('fieldMonthPitchEvent').value,Dhill_Call_List:document.getElementById('fieldDhillCallList').value,D_Call_List:document.getElementById('fieldDCallList').value,Create_Mock_Contract:document.getElementById('fieldCreateMockContract').value,Quick_Call_Notes:document.getElementById('fieldQuickCallNotes').value,Add_to_Booklist:document.getElementById('fieldAddToBooklist').value,Add_to_PCL:document.getElementById('fieldAddToPCL').value,Additional_Notes:document.getElementById('fieldAdditionalNotes').value,Followup_Notes:document.getElementById('fieldFollowupNotes').value};if(!data.Contact_Person){showToast('Contact Person required','error');return;}showToast('Saving...','info');if(rowIndex){google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Lead updated!','success');closeModal('leadModal');if(currentView==='dashboard')loadDashboard();else loadListView(currentView);}else showToast('Error: '+(res.error||'Unknown'),'error');}).withFailureHandler(handleError).updateLead(parseInt(rowIndex),data,currentUser?currentUser.name:'');}else{google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Lead created!','success');closeModal('leadModal');if(currentView==='dashboard')loadDashboard();else loadListView(currentView);}else showToast('Error: '+(res.error||'Unknown'),'error');}).withFailureHandler(handleError).createLead(data,currentUser?currentUser.name:'');}}
+
+function openCallMode(idx){callQueueIndex=idx;var r=callQueue[idx];if(!r){showToast('No lead found','error');return;}currentCallRecord=r;document.getElementById('callAvatar').textContent=getInitials(r.Contact_Person||'U');document.getElementById('callName').textContent=r.Contact_Person||'Unknown';document.getElementById('callEvent').textContent=r.Event_Name||'No event';document.getElementById('callPhone').textContent=r.Phone_Number||'-';document.getElementById('callPhone').href='tel:'+(r.Phone_Number||'');document.getElementById('callQuote').textContent=formatCurrency(r.Active_Quote);document.getElementById('callEventDate').textContent=formatDate(r.Date_of_Event)||'-';document.getElementById('callNotes').textContent=r.Additional_Notes||r.Quick_Call_Notes||'-';document.getElementById('callQuickNote').value='';document.getElementById('callStatusUpdate').style.display='none';document.querySelectorAll('.result-btn,.status-btn').forEach(function(b){b.classList.remove('active');});openModal('callModal');}
+
+function selectCallResult(btn){document.querySelectorAll('.result-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('callStatusUpdate').style.display=btn.dataset.result==='Talked'?'block':'none';}
+
+function selectStatus(btn){document.querySelectorAll('.status-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');}
+
+function saveCallAndNext(){if(!currentCallRecord)return;var resultBtn=document.querySelector('.result-btn.active');var statusBtn=document.querySelector('.status-btn.active');var note=document.getElementById('callQuickNote').value;var data={Quick_Call_Notes:resultBtn?resultBtn.dataset.result:'',Additional_Notes:note?((currentCallRecord.Additional_Notes||'')+'\n['+new Date().toLocaleDateString()+'] '+note):currentCallRecord.Additional_Notes};if(statusBtn)data.Lead_Status=statusBtn.dataset.status;showToast('Saving...','info');google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Call logged!','success');closeModal('callModal');google.script.run.incrementMetric(currentUser?currentUser.name:'','Calls_Made',1);callQueueIndex++;if(callQueueIndex<callQueue.length)setTimeout(function(){openCallMode(callQueueIndex);},300);else{showToast('Queue complete!','success');loadDashboard();}}else showToast('Error saving','error');}).withFailureHandler(handleError).updateLead(currentCallRecord.rowIndex,data,currentUser?currentUser.name:'');}
+
+function quickCall(rowIndex){var r=filteredRecords.find(function(x){return x.rowIndex===rowIndex;});if(r&&r.Phone_Number){window.open('tel:'+r.Phone_Number,'_self');google.script.run.incrementMetric(currentUser?currentUser.name:'','Calls_Made',1);}else showToast('No phone number','error');}
+
+function quickEmail(rowIndex){var r=filteredRecords.find(function(x){return x.rowIndex===rowIndex;});if(r&&r.Email){var subject=encodeURIComponent('Following Up - '+(r.Event_Name||'Your Event'));window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(r.Email)+'&su='+subject,'_blank');google.script.run.incrementMetric(currentUser?currentUser.name:'','Followups_Sent',1);}else showToast('No email','error');}
+
+function callLead(){var phone=document.getElementById('fieldPhoneNumber').value;if(phone){window.open('tel:'+phone,'_self');google.script.run.incrementMetric(currentUser?currentUser.name:'','Calls_Made',1);}else showToast('No phone number','error');}
+
+function emailLead(){var email=document.getElementById('fieldEmail').value;var evt=document.getElementById('fieldEventName').value;if(email){var subject=encodeURIComponent('Following Up - '+(evt||'Your Event'));window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(email)+'&su='+subject,'_blank');google.script.run.incrementMetric(currentUser?currentUser.name:'','Followups_Sent',1);}else showToast('No email','error');}
+
+function generateContract(){var rowIndex=document.getElementById('leadRowIndex').value;if(!rowIndex){showToast('Save lead first','error');return;}showToast('Generating contract...','info');google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Contract generated!','success');if(res.url)window.open(res.url,'_blank');}else showToast('Error: '+(res.error||'Unknown'),'error');}).withFailureHandler(handleError).generateContract(parseInt(rowIndex),currentUser?currentUser.name:'');}
+
+function loadResearchQueue(){google.script.run.withSuccessHandler(function(items){researchQueue=items||[];renderResearchList();var c=document.getElementById('navResearchCount');if(c)c.textContent=researchQueue.length;}).withFailureHandler(function(e){console.error(e);researchQueue=[];renderResearchList();}).getResearchQueue();}
+
+function renderResearchList(){var c=document.getElementById('researchList');if(!researchQueue.length){c.innerHTML='<div class="empty-state"><p>No pending research</p></div>';return;}c.innerHTML=researchQueue.map(function(item,i){var act=(currentResearchItem&&currentResearchItem.rowIndex===item.rowIndex)?'active':'';return'<div class="research-item '+act+'" onclick="selectResearchItem('+i+')"><div class="research-item-city">'+escapeHtml(item.City_Location||'Unknown')+'</div><div class="research-item-type">'+escapeHtml(item.Event_Type||item.Looking_For||'Unknown')+'</div><div class="research-item-meta"><span>'+escapeHtml(item.Date_Needed||'-')+'</span><span class="status status-'+(item.Research_Status==='Pending'?'cold':'warm')+'">'+escapeHtml(item.Research_Status||'Pending')+'</span></div></div>';}).join('');}
+
+function selectResearchItem(idx){currentResearchItem=researchQueue[idx];document.getElementById('researchEmptyState').style.display='none';document.getElementById('researchDetail').style.display='block';document.getElementById('researchRowIndex').value=currentResearchItem.rowIndex;document.getElementById('researchLookingFor').textContent=currentResearchItem.Looking_For||'-';document.getElementById('researchCity').textContent=currentResearchItem.City_Location||'-';document.getElementById('researchEventType').textContent=currentResearchItem.Event_Type||'-';document.getElementById('researchDateNeeded').textContent=currentResearchItem.Date_Needed||'-';document.getElementById('researchGuestCount').textContent=currentResearchItem.Guest_Count||'-';document.getElementById('researchBudget').textContent=currentResearchItem.Budget_Range||'-';document.getElementById('researchMessage').textContent=currentResearchItem.Message||'-';var q=encodeURIComponent((currentResearchItem.City_Location||'')+' '+(currentResearchItem.Event_Type||''));document.getElementById('linkedinSearchLink').href='https://www.linkedin.com/search/results/all/?keywords='+q;document.getElementById('googleSearchLink').href='https://www.google.com/search?q='+q;document.getElementById('facebookSearchLink').href='https://www.facebook.com/search/top?q='+q;document.getElementById('researchFoundName').value=currentResearchItem.Found_Name||'';document.getElementById('researchFoundCompany').value=currentResearchItem.Found_Company||'';document.getElementById('researchFoundEmail').value=currentResearchItem.Found_Email||'';document.getElementById('researchFoundPhone').value=currentResearchItem.Found_Phone||'';renderResearchList();}
+
+function openAddResearch(){var msg=prompt('Enter Bark.com lead info (City, Event Type, Date):');if(!msg)return;google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Research item added!','success');loadResearchQueue();}else showToast('Error','error');}).withFailureHandler(handleError).addResearchItem({City_Location:msg,Research_Status:'Pending'},currentUser?currentUser.name:'');}
+
+function markResearchNotFound(){if(!currentResearchItem)return;google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Marked not found','info');currentResearchItem=null;document.getElementById('researchEmptyState').style.display='block';document.getElementById('researchDetail').style.display='none';loadResearchQueue();}}).withFailureHandler(handleError).updateResearchItem(currentResearchItem.rowIndex,{Research_Status:'Not Found'},currentUser?currentUser.name:'');}
+
+function saveAndMoveToLeads(){if(!currentResearchItem)return;var data={Found_Name:document.getElementById('researchFoundName').value,Found_Company:document.getElementById('researchFoundCompany').value,Found_Email:document.getElementById('researchFoundEmail').value,Found_Phone:document.getElementById('researchFoundPhone').value,Research_Status:'Found',Moved_to_Leads:'Yes'};if(!data.Found_Name&&!data.Found_Email){showToast('Enter name or email','error');return;}showToast('Creating lead...','info');google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Lead created!','success');currentResearchItem=null;document.getElementById('researchEmptyState').style.display='block';document.getElementById('researchDetail').style.display='none';loadResearchQueue();}else showToast('Error: '+(res.error||'Unknown'),'error');}).withFailureHandler(handleError).moveResearchToLead(currentResearchItem.rowIndex,data,currentUser?currentUser.name:'');}
+
+function switchModalTab(tab){document.querySelectorAll('.modal-tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===tab);});document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});var panel=document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));if(panel)panel.classList.add('active');}
+
+function openModal(id){document.getElementById(id).classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('active');}
+function closeModalOnBackdrop(e,id){if(e.target.classList.contains('modal-backdrop'))closeModal(id);}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+function showToast(msg,type){var c=document.getElementById('toastContainer');var t=document.createElement('div');t.className='toast toast-'+(type||'info');t.innerHTML='<span class="toast-message">'+escapeHtml(msg)+'</span>';c.appendChild(t);setTimeout(function(){t.remove();},4000);}
+function handleError(e){console.error(e);showToast('An error occurred','error');}
+function getInitials(name){if(!name)return'U';var p=name.split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():name.substring(0,2).toUpperCase();}
+function escapeHtml(t){if(!t)return'';var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function formatCurrency(v){if(!v)return'-';var n=parseFloat(String(v).replace(/[^0-9.-]/g,''));return isNaN(n)?'-':'$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function formatDate(v){if(!v)return'-';try{var d=new Date(v);return isNaN(d.getTime())?v:d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){return v;}}
+function formatDateForInput(v){if(!v)return'';try{var d=new Date(v);return isNaN(d.getTime())?'':d.toISOString().split('T')[0];}catch(e){return'';}}
+function getStatusClass(s){if(!s)return'cold';s=s.toLowerCase();if(s.indexOf('hot')>=0||s.indexOf('super')>=0)return'hot';if(s.indexOf('warm')>=0||s.indexOf('contract')>=0)return'warm';if(s.indexOf('booked')>=0)return'booked';if(s.indexOf('dead')>=0||s.indexOf('lost')>=0||s.indexOf('cancel')>=0||s.indexOf('slow')>=0)return'dead';return'cold';}
+function debounce(fn,wait){var t;return function(){var ctx=this,args=arguments;clearTimeout(t);t=setTimeout(function(){fn.apply(ctx,args);},wait);};}
+
+// Call History Functions
+var callHistory=[];
+
+function loadCallHistory(){var daysAgo=parseInt(document.getElementById('callsPeriod').value)||7;showToast('Loading call history...','info');google.script.run.withSuccessHandler(function(res){console.log('Call history response:',res);if(res&&res.success){callHistory=res.calls||[];renderCallHistory();}else if(res){showToast('Error: '+(res.error||'Unknown'),'error');callHistory=[];renderCallHistory();}else{showToast('No response from server','error');callHistory=[];renderCallHistory();}}).withFailureHandler(function(e){console.error('Call history error:',e);showToast('Failed to load calls','error');callHistory=[];renderCallHistory();}).getCallHistoryForWeb('',daysAgo);}
+
+function renderCallHistory(){var c=document.getElementById('callsList');var totalCalls=callHistory.length;var conversations=callHistory.filter(function(call){return(parseInt(call.Duration_Sec)||0)>60;}).length;var totalDuration=callHistory.reduce(function(sum,call){return sum+(parseInt(call.Duration_Sec)||0);},0);var avgDuration=totalCalls>0?Math.round(totalDuration/totalCalls/60):0;var scoredCalls=callHistory.filter(function(call){return call.AI_Score;});var avgScore='-';if(scoredCalls.length>0){var totalScore=scoredCalls.reduce(function(sum,call){var score=parseFloat(String(call.AI_Score||'').replace('%',''))||0;if(score<1)score=score*100;return sum+score;},0);avgScore=Math.round(totalScore/scoredCalls.length)+'%';}document.getElementById('callsTotalCount').textContent=totalCalls;document.getElementById('callsConversations').textContent=conversations;document.getElementById('callsAvgDuration').textContent=avgDuration+'m';document.getElementById('callsAvgScore').textContent=avgScore;if(!callHistory.length){c.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:16px;opacity:0.5;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><h3>No calls synced yet</h3><p>Click "Sync Dialpad" to pull your team\'s call history</p></div>';return;}c.innerHTML=callHistory.map(function(call){var dir=call.Direction||'outbound';var rawScore=parseFloat(String(call.AI_Score||'').replace('%',''))||0;var scoreNum=rawScore<1?Math.round(rawScore*100):Math.round(rawScore);var scoreClass=scoreNum>=70?'high':scoreNum>=50?'medium':scoreNum>0?'low':'none';var scoreDisplay=scoreNum>0?scoreNum+'%':'-';var duration=call.Duration_Sec?Math.floor(parseInt(call.Duration_Sec)/60)+'m '+Math.round(parseInt(call.Duration_Sec)%60)+'s':'-';var dirIcon=dir==='inbound'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/><polyline points="7 17 17 7"/><polyline points="7 7 7 17 17 17"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/><polyline points="17 7 7 17"/><polyline points="17 17 17 7 7 7"/></svg>';var html='<div class="call-item"><div class="call-direction '+dir+'">'+dirIcon+'</div><div class="call-info"><div class="call-contact">'+escapeHtml(call.Contact_Name||call.Contact_Phone||'Unknown')+'</div><div class="call-meta"><span>'+escapeHtml(call.User||'-')+'</span><span>'+formatDate(call.Date)+'</span></div></div><div class="call-duration">'+duration+'</div><div class="call-score"><span class="call-score-badge '+scoreClass+'">'+scoreDisplay+'</span></div>';if(call.AI_Summary){html+='<div class="call-transcript"><div class="call-ai-summary"><div class="call-ai-summary-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>AI Summary</div><div class="call-ai-summary-text">'+escapeHtml(call.AI_Summary)+'</div></div></div>';}html+='</div>';return html;}).join('');}
+
+function syncDialpadCalls(){var daysAgo=parseInt(document.getElementById('callsPeriod').value)||7;showToast('Syncing calls from Dialpad...','info');google.script.run.withSuccessHandler(function(res){if(res.success){showToast('Sync complete! '+res.message,'success');loadCallHistory();}else{showToast('Error: '+(res.error||'Unknown'),'error');}}).withFailureHandler(function(e){console.error(e);showToast('Sync failed','error');}).syncDialpadCalls(daysAgo);}
+
+function formatCallDuration(seconds){if(!seconds)return'-';var m=Math.floor(seconds/60);var s=Math.round(seconds%60);return m+'m '+s+'s';}
+
+// ============================================
+// DAILY CHECK-IN FUNCTIONS
+// ============================================
+
+var selectedMood = '';
+
+function selectMood(btn) {
+  document.querySelectorAll('.mood-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  selectedMood = btn.dataset.mood;
+}
+
+function loadCheckin() {
+  var d = new Date();
+  document.getElementById('checkinDate').textContent = d.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  selectedMood = '';
+  document.querySelectorAll('.mood-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  document.getElementById('checkinRoadblocks').value = '';
+  document.getElementById('checkinWins').value = '';
+  
+  google.script.run
+    .withSuccessHandler(function(m) {
+      document.getElementById('checkinCalls').textContent = m.Calls_Made || 0;
+      document.getElementById('checkinConvos').textContent = m.Conversations || 0;
+      document.getElementById('checkinFollowups').textContent = m.Followups_Sent || 0;
+      document.getElementById('checkinUpgrades').textContent = m.Leads_Upgraded || 0;
+      document.getElementById('checkinContracts').textContent = m.Contracts_Generated || 0;
+      
+      if (m.AI_Score) {
+        document.getElementById('checkinAiScore').style.display = 'flex';
+        document.getElementById('checkinAiScoreValue').textContent = m.AI_Score + '%';
+      } else {
+        document.getElementById('checkinAiScore').style.display = 'none';
+      }
+      
+      if (m.Mood) {
+        var moodBtn = document.querySelector('.mood-btn[data-mood="' + m.Mood + '"]');
+        if (moodBtn) selectMood(moodBtn);
+      }
+      if (m.Roadblocks) document.getElementById('checkinRoadblocks').value = m.Roadblocks;
+      if (m.Special_Notes) document.getElementById('checkinWins').value = m.Special_Notes;
+    })
+    .withFailureHandler(function(e) {
+      console.error('Error loading checkin:', e);
+    })
+    .getTodayMetrics(currentUser ? currentUser.name : '');
+}
+
+function submitCheckin() {
+  var data = {
+    mood: selectedMood,
+    roadblocks: document.getElementById('checkinRoadblocks').value,
+    wins: document.getElementById('checkinWins').value
+  };
+  
+  showToast('Submitting check-in...', 'info');
+  
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res.success) {
+        showToast('Check-in submitted! 🎉', 'success');
+      } else {
+        showToast('Error: ' + (res.error || 'Unknown'), 'error');
+      }
+    })
+    .withFailureHandler(function(e) {
+      showToast('Failed to submit', 'error');
+      console.error(e);
+    })
+    .submitCheckin(data, currentUser ? currentUser.name : '');
+}
+
+// ============================================
+// ANALYTICS DASHBOARD FUNCTIONS
+// ============================================
+
+var analyticsData = null;
+
+function loadAnalytics() {
+  var period = document.getElementById('analyticsPeriod').value || 'week';
+  
+  showToast('Loading analytics...', 'info');
+  
+  google.script.run
+    .withSuccessHandler(function(data) {
+      console.log('Analytics data:', data);
+      if (data) {
+        renderAnalytics(data);
+        showToast('Analytics loaded', 'success');
+      } else {
+        showToast('No data returned', 'error');
+      }
+    })
+    .withFailureHandler(function(e) {
+      console.error('Error loading analytics:', e);
+      showToast('Failed to load analytics', 'error');
+    })
+    .getAnalyticsDataForWeb(period);
+  
+  google.script.run
+    .withSuccessHandler(function(trends) {
+      var period = document.getElementById('analyticsPeriod').value || 'week';
+      renderTrendsChart(trends, period);
+    })
+    .withFailureHandler(function(e) {
+      console.error('Error loading trends:', e);
+    })
+    .getDailyTrendsForWeb(period);
+}
+
+function renderAnalytics(data) {
+  if (!data || !data.kpis) {
+    console.error('Invalid analytics data:', data);
+    return;
+  }
+  
+  // KPI Cards
+  document.getElementById('analyticsTotalValue').textContent = formatCurrency(data.kpis.pipeline.value);
+  document.getElementById('analyticsTotalLeads').textContent = data.kpis.pipeline.count || 0;
+  document.getElementById('analyticsHotValue').textContent = formatCurrency(data.kpis.hotLeads.value);
+  document.getElementById('analyticsHotLeads').textContent = data.kpis.hotLeads.count || 0;
+  document.getElementById('analyticsBookedValue').textContent = formatCurrency(data.kpis.booked.value);
+  document.getElementById('analyticsBookedCount').textContent = data.kpis.booked.count || 0;
+  document.getElementById('analyticsConversion').textContent = (data.kpis.conversionRate.value || 0) + '%';
+  
+  var changeEl = document.getElementById('analyticsBookedChange');
+  if (changeEl && data.kpis.booked.change && data.kpis.booked.change !== 0) {
+    var isUp = data.kpis.booked.change > 0;
+    changeEl.textContent = (isUp ? '↑' : '↓') + Math.abs(data.kpis.booked.change) + '%';
+    changeEl.className = 'kpi-change ' + (isUp ? 'up' : 'down');
+    changeEl.style.display = 'inline-block';
+  } else if (changeEl) {
+    changeEl.style.display = 'none';
+  }
+  
+  if (data.funnel) renderFunnel(data.funnel);
+  if (data.sourceData) renderSources(data.sourceData);
+  if (data.teamLeaderboard) renderLeaderboard(data.teamLeaderboard);
+  if (data.recentBookings) renderRecentBookings(data.recentBookings);
+}
+
+function renderFunnel(funnel) {
+  var container = document.getElementById('funnelContainer');
+  if (!container) return;
+  
+  var total = funnel.total || 1;
+  
+  var stages = [
+    { key: 'total', label: 'Total Leads', count: funnel.total || 0, value: funnel.totalValue || 0, pct: 100, color: '#3a3a4a' },
+    { key: 'active', label: 'Active', count: funnel.active || 0, value: funnel.activeValue || 0, pct: Math.round(((funnel.active || 0) / total) * 100), color: '#635bff' },
+    { key: 'hot', label: 'Hot', count: funnel.hot || 0, value: funnel.hotValue || 0, pct: Math.round(((funnel.hot || 0) / total) * 100), color: '#ff9f0a' },
+    { key: 'booked', label: 'Booked', count: funnel.booked || 0, value: funnel.bookedValue || 0, pct: Math.round(((funnel.booked || 0) / total) * 100), color: '#30d158' }
+  ];
+  
+  container.innerHTML = stages.map(function(s) {
+    return '<div class="funnel-row">' +
+      '<div class="funnel-info">' +
+        '<span class="funnel-label">' + s.label + '</span>' +
+        '<span class="funnel-value">' + s.count + ' <span class="funnel-amount">' + formatCurrency(s.value) + '</span></span>' +
+      '</div>' +
+      '<div class="funnel-bar-wrapper">' +
+        '<div class="funnel-bar-fill" style="width:' + s.pct + '%;background:' + s.color + ';"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderSources(sources) {
+  var container = document.getElementById('sourcesList');
+  if (!container) return;
+  
+  if (!sources || sources.length === 0) {
+    container.innerHTML = '<div class="empty-small">No source data</div>';
+    return;
+  }
+  
+  var maxValue = Math.max.apply(null, sources.map(function(s) { return s.value || 1; }));
+  
+  container.innerHTML = sources.map(function(source) {
+    var pct = Math.round(((source.value || 0) / maxValue) * 100);
+    return '<div class="source-item">' +
+      '<span class="source-name">' + escapeHtml(source.name) + '</span>' +
+      '<div class="source-bar-container">' +
+        '<div class="source-bar" style="width:' + pct + '%;"></div>' +
+      '</div>' +
+      '<span class="source-count">' + formatCurrency(source.value) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderLeaderboard(team) {
+  var tbody = document.getElementById('leaderboardBody');
+  if (!tbody) return;
+  
+  if (!team || team.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted);">No team data for this period</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = team.map(function(member, index) {
+    var rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+    var aiScoreDisplay = member.aiScore ? member.aiScore + '%' : '-';
+    var aiScoreClass = '';
+    if (member.aiScore >= 70) aiScoreClass = 'score-high';
+    else if (member.aiScore >= 50) aiScoreClass = 'score-medium';
+    else if (member.aiScore > 0) aiScoreClass = 'score-low';
+    
+    return '<tr>' +
+      '<td style="text-align:center;font-weight:700;" class="rank-' + rankClass + '">#' + (index + 1) + '</td>' +
+      '<td><div class="leaderboard-member"><div class="leaderboard-avatar">' + getInitials(member.name) + '</div><span>' + escapeHtml(member.name) + '</span></div></td>' +
+      '<td style="text-align:right;font-weight:600;color:#30d158;">' + formatCurrency(member.bookedValue) + '</td>' +
+      '<td style="text-align:center;">' + (member.bookedCount || 0) + '</td>' +
+      '<td style="text-align:right;color:var(--text-secondary);">' + formatCurrency(member.pipelineValue) + '</td>' +
+      '<td style="text-align:center;">' + (member.calls || 0) + '</td>' +
+      '<td style="text-align:center;">' + (member.conversations || 0) + '</td>' +
+      '<td style="text-align:center;"><span class="ai-score-badge ' + aiScoreClass + '">' + aiScoreDisplay + '</span></td>' +
+      '<td style="text-align:right;font-weight:700;color:#635bff;">' + (member.points || 0) + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderRecentBookings(bookings) {
+  var container = document.getElementById('recentBookingsList');
+  if (!container) return;
+  
+  if (!bookings || bookings.length === 0) {
+    container.innerHTML = '<div class="empty-small">No bookings this period</div>';
+    return;
+  }
+  
+  container.innerHTML = bookings.map(function(b) {
+    return '<div class="booking-item">' +
+      '<div class="booking-info">' +
+        '<div class="booking-event">' + escapeHtml(b.event || 'Unnamed Event') + '</div>' +
+        '<div class="booking-contact">' + escapeHtml(b.contact || '') + ' • ' + escapeHtml(b.owner || '') + '</div>' +
+      '</div>' +
+      '<div class="booking-meta">' +
+        '<div class="booking-value">' + formatCurrency(b.value) + '</div>' +
+        '<div class="booking-date">' + formatDate(b.date) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ============================================
+// LINE CHART - ACTIVITY TRENDS
+// ============================================
+
+function renderTrendsChart(trends, period) {
+  var container = document.getElementById('trendsChart');
+  if (!container) return;
+  
+  if (!trends || trends.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#71717a;">No activity data for this period</div>';
+    return;
+  }
+  
+  // Calculate totals for summary
+  var totalCalls = 0, totalConvos = 0, totalQuoted = 0, totalBooked = 0;
+  var maxVal = 1;
+  
+  trends.forEach(function(d) {
+    totalCalls += (d.calls || 0);
+    totalConvos += (d.conversations || 0);
+    totalQuoted += (d.quoted || 0);
+    totalBooked += (d.booked || 0);
+    if ((d.calls || 0) > maxVal) maxVal = d.calls;
+    if ((d.conversations || 0) > maxVal) maxVal = d.conversations;
+  });
+  
+  // Chart dimensions - DYNAMIC based on period
+  var chartWidth = container.offsetWidth || 800;
+  var chartHeight = 200;
+  var paddingLeft = 50;
+  var paddingRight = 20;
+  var paddingTop = 30;
+  var paddingBottom = 50;
+  var graphWidth = chartWidth - paddingLeft - paddingRight;
+  var graphHeight = chartHeight - paddingTop - paddingBottom;
+  
+  // Calculate point positions
+  var numPoints = trends.length;
+  var pointSpacing = numPoints > 1 ? graphWidth / (numPoints - 1) : graphWidth;
+  
+  // Build SVG points for lines
+  var callsPoints = [];
+  var convosPoints = [];
+  
+  trends.forEach(function(d, i) {
+    var x = paddingLeft + (i * pointSpacing);
+    var callY = paddingTop + graphHeight - ((d.calls || 0) / maxVal * graphHeight);
+    var convoY = paddingTop + graphHeight - ((d.conversations || 0) / maxVal * graphHeight);
+    callsPoints.push(x + ',' + callY);
+    convosPoints.push(x + ',' + convoY);
+  });
+  
+  var callsPath = callsPoints.join(' ');
+  var convosPath = convosPoints.join(' ');
+  
+  // Build SVG
+  var svg = '<svg width="100%" height="' + chartHeight + '" viewBox="0 0 ' + chartWidth + ' ' + chartHeight + '" preserveAspectRatio="xMidYMid meet">';
+  
+  // Grid lines - smart Y-axis labels
+  var numGridLines = Math.min(4, maxVal); // Don't show more lines than max value
+  if (numGridLines < 2) numGridLines = 2; // At least 2 lines (0 and max)
+  
+  var shownValues = new Set(); // Track shown values to avoid duplicates
+  for (var i = 0; i <= numGridLines; i++) {
+    var y = paddingTop + (graphHeight / numGridLines) * i;
+    var val = Math.round(maxVal - (maxVal / numGridLines) * i);
+    
+    // Skip if we already showed this value
+    if (shownValues.has(val)) continue;
+    shownValues.add(val);
+    
+    svg += '<line x1="' + paddingLeft + '" y1="' + y + '" x2="' + (chartWidth - paddingRight) + '" y2="' + y + '" stroke="#27272a" stroke-width="1"/>';
+    svg += '<text x="' + (paddingLeft - 10) + '" y="' + (y + 4) + '" fill="#71717a" font-size="11" text-anchor="end">' + val + '</text>';
+  }
+  
+  // Area fills
+  var callsArea = 'M' + paddingLeft + ',' + (paddingTop + graphHeight) + ' L' + callsPath + ' L' + (paddingLeft + (numPoints - 1) * pointSpacing) + ',' + (paddingTop + graphHeight) + ' Z';
+  var convosArea = 'M' + paddingLeft + ',' + (paddingTop + graphHeight) + ' L' + convosPath + ' L' + (paddingLeft + (numPoints - 1) * pointSpacing) + ',' + (paddingTop + graphHeight) + ' Z';
+  
+  svg += '<path d="' + callsArea + '" fill="rgba(99, 102, 241, 0.1)"/>';
+  svg += '<path d="' + convosArea + '" fill="rgba(34, 197, 94, 0.1)"/>';
+  
+  // Lines
+  svg += '<polyline points="' + callsPath + '" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  svg += '<polyline points="' + convosPath + '" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  
+  // Data points and labels
+  trends.forEach(function(d, i) {
+    var x = paddingLeft + (i * pointSpacing);
+    var callY = paddingTop + graphHeight - ((d.calls || 0) / maxVal * graphHeight);
+    var convoY = paddingTop + graphHeight - ((d.conversations || 0) / maxVal * graphHeight);
+    
+    // Points
+    svg += '<circle cx="' + x + '" cy="' + callY + '" r="4" fill="#6366f1" stroke="#0a0a0b" stroke-width="2"/>';
+    svg += '<circle cx="' + x + '" cy="' + convoY + '" r="4" fill="#22c55e" stroke="#0a0a0b" stroke-width="2"/>';
+    
+    // Booked indicator
+    if ((d.booked || 0) > 0) {
+      svg += '<circle cx="' + x + '" cy="' + (paddingTop + 10) + '" r="8" fill="#a855f7"/>';
+      svg += '<text x="' + x + '" y="' + (paddingTop + 14) + '" fill="white" font-size="10" font-weight="bold" text-anchor="middle">' + d.booked + '</text>';
+    }
+    
+    // Date labels
+    var dateObj = new Date(d.date + 'T12:00:00');
+    var dateLabel = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    svg += '<text x="' + x + '" y="' + (chartHeight - 10) + '" fill="#71717a" font-size="10" text-anchor="middle">' + dateLabel + '</text>';
+    
+    // Quoted badge below date
+    if ((d.quoted || 0) > 0) {
+      svg += '<text x="' + x + '" y="' + (chartHeight - 25) + '" fill="#f59e0b" font-size="9" font-weight="600" text-anchor="middle">$' + formatK(d.quoted) + '</text>';
+    }
+  });
+  
+  svg += '</svg>';
+  
+  // Build complete HTML
+  var html = '<div style="width:100%;">';
+  
+  // Chart
+  html += '<div style="width:100%;overflow-x:auto;">' + svg + '</div>';
+  
+  // Legend
+  html += '<div style="display:flex;justify-content:center;gap:24px;padding:16px 0;border-top:1px solid #27272a;margin-top:8px;">';
+  html += '<span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#a1a1aa;"><span style="width:12px;height:3px;background:#6366f1;border-radius:2px;"></span> Calls</span>';
+  html += '<span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#a1a1aa;"><span style="width:12px;height:3px;background:#22c55e;border-radius:2px;"></span> Conversations</span>';
+  html += '<span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#a1a1aa;"><span style="width:12px;height:12px;background:#a855f7;border-radius:50%;"></span> Booked</span>';
+  html += '<span style="display:flex;align-items:center;gap:8px;font-size:12px;color:#a1a1aa;"><span style="color:#f59e0b;font-weight:600;">$</span> Quoted</span>';
+  html += '</div>';
+  
+  // Summary stats
+  var avgCalls = trends.length > 0 ? Math.round(totalCalls / trends.length) : 0;
+  html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding:16px;background:#18181b;border-radius:8px;margin-top:8px;">';
+  html += '<div style="text-align:center;"><div style="font-size:1.5rem;font-weight:700;color:#fafafa;">' + totalCalls + '</div><div style="font-size:10px;color:#71717a;text-transform:uppercase;">Total Calls</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:1.5rem;font-weight:700;color:#fafafa;">' + totalConvos + '</div><div style="font-size:10px;color:#71717a;text-transform:uppercase;">Convos</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:1.5rem;font-weight:700;color:#f59e0b;">$' + formatK(totalQuoted) + '</div><div style="font-size:10px;color:#71717a;text-transform:uppercase;">Quoted</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:1.5rem;font-weight:700;color:#a855f7;">' + totalBooked + '</div><div style="font-size:10px;color:#71717a;text-transform:uppercase;">Booked</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:1.5rem;font-weight:700;color:#fafafa;">' + avgCalls + '</div><div style="font-size:10px;color:#71717a;text-transform:uppercase;">Avg/Day</div></div>';
+  html += '</div>';
+  
+  html += '</div>';
+  
+  container.innerHTML = html;
+}
+
+function formatK(num) {
+  if (!num) return '0';
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+</script>
