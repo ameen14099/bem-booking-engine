@@ -9,211 +9,798 @@
   <?!= include('Styles.html'); ?>
 </head>
 <body>
-  <!-- LOGIN -->
-  <div class="login" id="loginScreen">
+  <!-- LOGIN SCREEN - PREMIUM DESIGN -->
+  <div class="login-screen" id="loginScreen">
+    <!-- Ambient Background -->
+    <div class="login-ambient">
+      <div class="ambient-orb orb-1"></div>
+      <div class="ambient-orb orb-2"></div>
+      <div class="ambient-orb orb-3"></div>
+    </div>
+
+    <!-- Login Card -->
     <div class="login-card">
       <div class="login-header">
-        <h1 class="login-title">BEM</h1>
-        <p class="login-subtitle">Booking Engine Machine</p>
+        <div class="login-logo">
+          <span class="logo-text">BEM</span>
+          <span class="logo-version">2.0</span>
+        </div>
+        <p class="login-tagline">Booking Engine Machine</p>
       </div>
-      <div class="login-form">
-        <label class="label">Team Member</label>
-        <select id="userSelect" class="select">
-          <option value="">Select your name...</option>
-        </select>
-        <button class="btn btn-primary btn-full" onclick="handleLogin()">Sign In</button>
+
+      <div class="login-body">
+        <div class="login-field">
+          <label class="login-label">Team Member</label>
+          <div class="select-wrapper loading" id="loginSelectWrapper">
+            <select id="userSelect" class="login-select">
+              <option value="">Select your name...</option>
+            </select>
+            <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            <!-- Loading State -->
+            <div class="login-loading">
+              <div class="login-spinner"></div>
+              <span>Welcome to BEM 2.0</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="login-btn" onclick="handleLogin()">
+          <span>Sign In</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="login-footer">
+        <p>Powered by <strong>Dewayne Hill Entertainment</strong></p>
       </div>
     </div>
   </div>
 
   <!-- APP -->
   <div class="app" id="appContainer">
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR - PREMIUM DESIGN -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <span class="logo">BEM</span>
-        <button class="btn-icon sidebar-close" onclick="toggleSidebar()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+        <div class="sidebar-logo">
+          <span class="logo-text">BEM</span>
+          <span class="logo-version">2.0</span>
+        </div>
       </div>
 
-      <nav class="nav">
-        <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          <span>Dashboard</span>
-        </button>
-        <button class="nav-item" data-view="leads" onclick="switchView('leads')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>All Leads</span>
-          <span class="badge" id="navLeadsCount">0</span>
-        </button>
-        <button class="nav-item" data-view="my" onclick="switchView('my')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>My Leads</span>
-          <span class="badge" id="navMyCount">0</span>
-        </button>
-        <button class="nav-item" data-view="hot" onclick="switchView('hot')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 17 10a5 5 0 1 1-10 0c0-.3 0-.6.1-.9a4 4 0 0 0 4.9-3.6c.1-.4.1-.8 0-1.2A9 9 0 0 0 12 2z"/></svg>
-          <span>Hot Leads</span>
-          <span class="badge badge-hot" id="navHotCount">0</span>
-        </button>
-        <button class="nav-item" data-view="followups" onclick="switchView('followups')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>Today's Follow Ups</span>
-          <span class="badge badge-urgent" id="navFollowupsCount">0</span>
-        </button>
-        <button class="nav-item" data-view="contracts" onclick="switchView('contracts')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          <span>Contracts Review</span>
-          <span class="badge" id="navContractsCount">0</span>
-        </button>
-        <button class="nav-item" data-view="dhill" onclick="switchView('dhill')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          <span>Dhill Review</span>
-          <span class="badge" id="navDhillCount">0</span>
-        </button>
-        <button class="nav-item" data-view="booked" onclick="switchView('booked')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <span>Booked</span>
-          <span class="badge badge-success" id="navBookedCount">0</span>
-        </button>
-        <button class="nav-item" data-view="parking" onclick="switchView('parking')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-          <span>Archive</span>
-          <span class="badge" id="navParkingCount">0</span>
-        </button>
-        <button class="nav-item" data-view="storage" onclick="switchView('storage')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-          <span>Storage</span>
-          <span class="badge" id="navStorageCount">0</span>
-        </button>
-        <button class="nav-item" data-view="research" onclick="switchView('research')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-          <span>Research Queue</span>
-          <span class="badge" id="navResearchCount">0</span>
-        </button>
-        <button class="nav-item" data-view="calls" onclick="switchView('calls')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M14.05 2a9 9 0 0 1 8 7.94"/><path d="M14.05 6A5 5 0 0 1 18 10"/></svg>
-          <span>Call History</span>
-        </button>
-        <button class="nav-item" data-view="analytics" onclick="switchView('analytics')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-          <span>Analytics</span>
-        </button>
-        <button class="nav-item" data-view="eod" onclick="switchView('eod')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
-          <span>Daily Check-in</span>
-        </button>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span class="nav-section-title">Overview</span>
+          <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span>Dashboard</span>
+          </button>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-title">Leads</span>
+          <button class="nav-item" data-view="leads" onclick="switchView('leads')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>All Leads</span>
+            <span class="nav-badge" id="navLeadsCount">0</span>
+          </button>
+          <button class="nav-item" data-view="my" onclick="switchView('my')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>My Leads</span>
+            <span class="nav-badge" id="navMyCount">0</span>
+          </button>
+          <button class="nav-item" data-view="hot" onclick="switchView('hot')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 17 10a5 5 0 1 1-10 0c0-.3 0-.6.1-.9a4 4 0 0 0 4.9-3.6c.1-.4.1-.8 0-1.2A9 9 0 0 0 12 2z"/></svg>
+            <span>Hot Leads</span>
+            <span class="nav-badge hot" id="navHotCount">0</span>
+          </button>
+          <button class="nav-item" data-view="followups" onclick="switchView('followups')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Today's Follow Ups</span>
+            <span class="nav-badge hot" id="navFollowupsCount">0</span>
+          </button>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-title">Pipeline</span>
+          <button class="nav-item" data-view="contracts" onclick="switchView('contracts')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Contracts Review</span>
+            <span class="nav-badge" id="navContractsCount">0</span>
+          </button>
+          <button class="nav-item" data-view="dhill" onclick="switchView('dhill')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>Dhill Review</span>
+            <span class="nav-badge" id="navDhillCount">0</span>
+          </button>
+          <button class="nav-item" data-view="booked" onclick="switchView('booked')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Booked</span>
+            <span class="nav-badge success" id="navBookedCount">0</span>
+          </button>
+          <button class="nav-item" data-view="clients" onclick="switchView('clients')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Clients</span>
+            <span class="nav-badge muted" id="navClientsCount">0</span>
+          </button>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-title">Storage</span>
+          <button class="nav-item" data-view="parking" onclick="switchView('parking')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span>Parking Lot</span>
+            <span class="nav-badge muted" id="navParkingCount">0</span>
+          </button>
+          <button class="nav-item" data-view="storage" onclick="switchView('storage')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+            <span>Storage</span>
+            <span class="nav-badge muted" id="navStorageCount">0</span>
+          </button>
+          <button class="nav-item" data-view="research" onclick="switchView('research')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            <span>Research Queue</span>
+            <span class="nav-badge muted" id="navResearchCount">0</span>
+          </button>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-title">Activity</span>
+          <button class="nav-item" data-view="calls" onclick="switchView('calls')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M14.05 2a9 9 0 0 1 8 7.94"/><path d="M14.05 6A5 5 0 0 1 18 10"/></svg>
+            <span>Call History</span>
+          </button>
+          <button class="nav-item" data-view="eod" onclick="switchView('eod')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+            <span>Daily Check-in</span>
+          </button>
+          <button class="nav-item" data-view="contractsFolder" onclick="switchView('contractsFolder')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>Contracts Folder</span>
+            <span class="nav-badge muted" id="navContractsFolderCount">0</span>
+          </button>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-card">
-          <div class="avatar" id="userAvatar">U</div>
+        <div class="sidebar-user">
+          <div class="user-avatar" id="userAvatar">U</div>
           <div class="user-info">
             <span class="user-name" id="userName">User</span>
             <span class="user-role" id="userRole">Team</span>
           </div>
-          <button class="btn-icon" onclick="logout()" title="Sign out">
+          <button class="user-logout" onclick="logout()" title="Sign out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
       </div>
     </aside>
 
-    <!-- MAIN -->
-    <main class="main">
-      <header class="header">
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- Ambient Background - ALWAYS VISIBLE -->
+      <div class="ambient-glow"></div>
+
+      <header class="main-header">
+        <!-- Mobile menu toggle only -->
         <div class="header-left">
-          <button class="btn-icon mobile-menu" onclick="toggleSidebar()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
           </button>
-          <h1 class="page-title" id="pageTitle">Dashboard</h1>
+          <!-- NO PAGE TITLE HERE -->
         </div>
+
         <div class="header-right">
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" id="searchInput" placeholder="Search leads...">
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search leads..." id="searchInput">
           </div>
-          <button class="btn btn-primary" onclick="openAddLead()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span class="btn-text">Add Lead</span>
+          <button class="add-lead-btn" onclick="openAddLead()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Add Lead</span>
           </button>
         </div>
       </header>
 
       <div class="content">
-        <!-- DASHBOARD VIEW -->
-        <div class="view active" id="dashboardView">
-          <div class="metrics">
-            <div class="metric">
-              <div class="metric-value" id="statPipeline">$0</div>
-              <div class="metric-label">Pipeline Value</div>
-            </div>
-            <div class="metric metric-highlight">
-              <div class="metric-value" id="statFollowups">0</div>
-              <div class="metric-label">Follow Ups Today</div>
-            </div>
-            <div class="metric">
-              <div class="metric-value" id="statHot">0</div>
-              <div class="metric-label">Hot Leads</div>
+        <!-- Dashboard - Premium Playful -->
+        <div id="dashboardView" class="view active">
+          <!-- Dashboard Loading Overlay -->
+          <div class="dashboard-loading active" id="dashboardLoading">
+            <div class="dashboard-loading-content">
+              <div class="loading-logo">
+                <div class="loading-spinner"></div>
+                <span class="loading-logo-text">BEM</span>
+              </div>
+              <div class="loading-text">Loading dashboard...</div>
             </div>
           </div>
 
-          <div class="section">
-            <div class="section-header">
-              <h2 class="section-title">Today's Queue</h2>
-              <span class="section-count" id="queueCount">0 leads to contact</span>
+          <!-- Page Header -->
+          <div class="page-header dashboard-content" style="opacity: 0;">
+            <div class="page-header-left">
+              <h1 class="page-title">Dashboard</h1>
+              <span class="live-badge"><span class="live-dot"></span>Live</span>
             </div>
-            <div class="queue" id="todayQueue"></div>
           </div>
 
-          <div class="section">
-            <div class="section-header">
-              <h2 class="section-title">Recent Hot Leads</h2>
-              <button class="btn-link" onclick="switchView('hot')">View all</button>
+          <!-- Hero Stats -->
+          <section class="hero-stats dashboard-content" style="opacity: 0;">
+            <div class="hero-card pipeline">
+              <div class="hero-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div class="hero-value" id="heroPipeline">$0</div>
+              <div class="hero-label">Total Pipeline</div>
+              <div class="hero-sub" id="heroPipelineSub">0 active leads</div>
+              <div class="hero-badge" id="heroPipelineCount">0 leads</div>
             </div>
-            <div class="leads-list" id="recentHotLeads"></div>
+
+            <div class="hero-card hot">
+              <div class="hero-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 22c-4.97 0-9-2.69-9-6v-.5C3 9.5 8 4 12 2c4 2 9 7.5 9 13.5v.5c0 3.31-4.03 6-9 6z"/>
+                  <path d="M12 22c-2 0-4-1.5-4-4 0-3 4-6 4-8 0 2 4 5 4 8 0 2.5-2 4-4 4z"/>
+                </svg>
+              </div>
+              <div class="hero-value" id="heroHot">$0</div>
+              <div class="hero-label">Hot Leads</div>
+              <div class="hero-sub" id="heroHotSub">0 hot leads</div>
+              <div class="hero-badge" id="heroHotCount">0 hot</div>
+            </div>
+
+            <div class="hero-card booked">
+              <div class="hero-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <div class="hero-value" id="heroBooked">$0</div>
+              <div class="hero-label">Total Booked</div>
+              <div class="hero-sub" id="heroBookedSub">0 deals</div>
+              <div class="hero-badge" id="heroBookedCount">0 deals</div>
+            </div>
+
+            <div class="hero-card risk">
+              <div class="hero-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+              <div class="hero-value" id="heroRisk">$0</div>
+              <div class="hero-label">At Risk</div>
+              <div class="hero-sub" id="heroRiskSub">0 leads need attention</div>
+              <div class="hero-badge" id="heroRiskCount">0 leads</div>
+            </div>
+          </section>
+
+          <!-- Main Grid -->
+          <section class="dash-grid dashboard-content" style="opacity: 0;">
+            <!-- Conversion Funnel Card -->
+            <div class="card funnel-card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="card-icon">
+                    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+                  </svg>
+                  <span>Pipeline Funnel</span>
+                </div>
+                <span class="card-badge">Live</span>
+              </div>
+              <div class="card-body funnel-body">
+
+                <div class="funnel-stage" data-stage="booked">
+                  <div class="funnel-label">
+                    <span class="funnel-dot booked"></span>
+                    <span class="funnel-name">Booked</span>
+                  </div>
+                  <div class="funnel-bar-container">
+                    <div class="funnel-bar booked" id="funnelBarBooked" style="width: 0%"></div>
+                    <div class="funnel-bar-glow booked"></div>
+                  </div>
+                  <div class="funnel-data">
+                    <span class="funnel-count" id="funnelCountBooked">0</span>
+                    <span class="funnel-value" id="funnelValBooked">$0</span>
+                  </div>
+                </div>
+
+                <div class="funnel-stage" data-stage="contract">
+                  <div class="funnel-label">
+                    <span class="funnel-dot contract"></span>
+                    <span class="funnel-name">Contract Review</span>
+                  </div>
+                  <div class="funnel-bar-container">
+                    <div class="funnel-bar contract" id="funnelBarContract" style="width: 0%"></div>
+                    <div class="funnel-bar-glow contract"></div>
+                  </div>
+                  <div class="funnel-data">
+                    <span class="funnel-count" id="funnelCountContract">0</span>
+                    <span class="funnel-value" id="funnelValContract">$0</span>
+                  </div>
+                </div>
+
+                <div class="funnel-stage" data-stage="hot">
+                  <div class="funnel-label">
+                    <span class="funnel-dot hot"></span>
+                    <span class="funnel-name">Hot</span>
+                  </div>
+                  <div class="funnel-bar-container">
+                    <div class="funnel-bar hot" id="funnelBarHot" style="width: 0%"></div>
+                    <div class="funnel-bar-glow hot"></div>
+                  </div>
+                  <div class="funnel-data">
+                    <span class="funnel-count" id="funnelCountHot">0</span>
+                    <span class="funnel-value" id="funnelValHot">$0</span>
+                  </div>
+                </div>
+
+                <div class="funnel-stage" data-stage="warm">
+                  <div class="funnel-label">
+                    <span class="funnel-dot warm"></span>
+                    <span class="funnel-name">Warm</span>
+                  </div>
+                  <div class="funnel-bar-container">
+                    <div class="funnel-bar warm" id="funnelBarWarm" style="width: 0%"></div>
+                    <div class="funnel-bar-glow warm"></div>
+                  </div>
+                  <div class="funnel-data">
+                    <span class="funnel-count" id="funnelCountWarm">0</span>
+                    <span class="funnel-value" id="funnelValWarm">$0</span>
+                  </div>
+                </div>
+
+                <div class="funnel-stage" data-stage="cold">
+                  <div class="funnel-label">
+                    <span class="funnel-dot cold"></span>
+                    <span class="funnel-name">Cold</span>
+                  </div>
+                  <div class="funnel-bar-container">
+                    <div class="funnel-bar cold" id="funnelBarCold" style="width: 0%"></div>
+                    <div class="funnel-bar-glow cold"></div>
+                  </div>
+                  <div class="funnel-data">
+                    <span class="funnel-count" id="funnelCountCold">0</span>
+                    <span class="funnel-value" id="funnelValCold">$0</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Shows Card -->
+            <div class="card shows-card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="card-icon">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>Upcoming Shows</span>
+                </div>
+                <span class="card-meta">Next 30 days</span>
+              </div>
+              <div class="card-body">
+                <div class="shows-list" id="dashShows">
+                  <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>No upcoming shows</span>
+                  </div>
+                </div>
+                <div class="shows-total">
+                  <span>Total Revenue</span>
+                  <strong id="showsTotal">$0</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attention Card -->
+            <div class="card attention-card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="card-icon">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <span>Needs Attention</span>
+                </div>
+                <span class="attention-pulse"></span>
+              </div>
+              <div class="card-body">
+                <div class="attention-items">
+                  <div class="att-item" onclick="navTo('overdue')">
+                    <span class="att-dot red"></span>
+                    <div class="att-content">
+                      <span class="att-count" id="attOverdue">0</span>
+                      <span class="att-label">Overdue Follow-ups</span>
+                    </div>
+                    <svg class="att-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                  <div class="att-item" onclick="navTo('stale')">
+                    <span class="att-dot orange"></span>
+                    <div class="att-content">
+                      <span class="att-count" id="attStale">0</span>
+                      <span class="att-label">Stale 7+ days</span>
+                    </div>
+                    <svg class="att-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                  <div class="att-item" onclick="navTo('nofollowup')">
+                    <span class="att-dot yellow"></span>
+                    <div class="att-content">
+                      <span class="att-count" id="attNoFollow">0</span>
+                      <span class="att-label">No follow-up set</span>
+                    </div>
+                    <svg class="att-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                  <div class="att-item" onclick="navTo('hot')">
+                    <span class="att-dot purple"></span>
+                    <div class="att-content">
+                      <span class="att-count" id="attHotCold">0</span>
+                      <span class="att-label">Hot going cold</span>
+                    </div>
+                    <svg class="att-arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                </div>
+                <div class="attention-total">
+                  <span>Total needing action</span>
+                  <strong id="attTotal">0</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sources Card -->
+            <div class="card sources-card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="card-icon">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                  <span>Lead Sources</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="sources-chart" id="dashSources"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Performance Section -->
+          <div class="perf-section dashboard-content" style="opacity: 0;">
+
+            <!-- Header with Date Filter -->
+            <div class="perf-header">
+              <h2 class="perf-title">Performance</h2>
+              <div class="perf-controls">
+                <div class="perf-tabs" id="perfTabs">
+                  <button class="perf-tab" data-period="today">Today</button>
+                  <button class="perf-tab active" data-period="week">This Week</button>
+                  <button class="perf-tab" data-period="month">This Month</button>
+                  <button class="perf-tab custom" data-period="custom" id="customDateBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Custom
+                  </button>
+                </div>
+                <!-- Custom Date Range Picker (hidden by default) -->
+                <div class="date-range-picker" id="dateRangePicker">
+                  <div class="date-input-group">
+                    <label>From</label>
+                    <input type="date" id="dateFrom" />
+                  </div>
+                  <div class="date-input-group">
+                    <label>To</label>
+                    <input type="date" id="dateTo" />
+                  </div>
+                  <button class="date-apply-btn" onclick="applyCustomDateRange()">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Performance Summary Cards -->
+            <div class="perf-summary">
+              <div class="perf-card calls">
+                <div class="perf-card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div class="perf-card-content">
+                  <span class="perf-card-value" id="perfCalls">0</span>
+                  <span class="perf-card-label">Calls Made</span>
+                </div>
+              </div>
+
+              <div class="perf-card convos">
+                <div class="perf-card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                </div>
+                <div class="perf-card-content">
+                  <span class="perf-card-value" id="perfConvos">0</span>
+                  <span class="perf-card-label">Conversations</span>
+                </div>
+              </div>
+
+              <div class="perf-card emails">
+                <div class="perf-card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </div>
+                <div class="perf-card-content">
+                  <span class="perf-card-value" id="perfEmails">0</span>
+                  <span class="perf-card-label">Emails Sent</span>
+                </div>
+              </div>
+
+              <div class="perf-card deals">
+                <div class="perf-card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="perf-card-content">
+                  <span class="perf-card-value" id="perfDeals">0</span>
+                  <span class="perf-card-label">Deals Closed</span>
+                </div>
+              </div>
+
+              <div class="perf-card revenue">
+                <div class="perf-card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+                <div class="perf-card-content">
+                  <span class="perf-card-value" id="perfRevenue">$0</span>
+                  <span class="perf-card-label">Revenue Booked</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Team Leaderboard (Full Width) -->
+            <div class="team-section">
+              <div class="team-header">
+                <h3 class="team-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  Team Leaderboard
+                </h3>
+              </div>
+
+              <div class="team-table">
+                <div class="team-table-header">
+                  <span class="th-rank">RANK</span>
+                  <span class="th-member">MEMBER</span>
+                  <span class="th-stat">CALLS</span>
+                  <span class="th-stat">CONVOS</span>
+                  <span class="th-stat">EMAILS</span>
+                  <span class="th-stat">UPGRADES</span>
+                  <span class="th-stat">DEALS</span>
+                  <span class="th-stat">BOOKED $</span>
+                  <span class="th-stat">PIPELINE $</span>
+                  <span class="th-stat">QUALITY</span>
+                  <span class="th-points">SCORE</span>
+                </div>
+                <div class="team-table-body" id="teamTableBody">
+                  <div class="team-loading">Loading team data...</div>
+                </div>
+                <div class="team-pagination" id="teamPagination"></div>
+              </div>
+            </div>
+
           </div>
 
-          <div class="section">
-            <div class="section-header">
-              <h2 class="section-title">Team Performance</h2>
-              <select class="select select-sm" id="perfPeriod" onchange="loadTeamPerformance()">
-                <option value="today">Today</option>
-                <option value="week" selected>This Week</option>
-                <option value="month">This Month</option>
-              </select>
-            </div>
-            <div class="team-performance" id="teamPerformance"></div>
-          </div>
         </div>
 
         <!-- LIST VIEW -->
         <div class="view" id="listView">
-          <div class="filters">
-            <div class="filter-group">
-              <select class="select select-sm" id="filterStatus"><option value="">All Statuses</option></select>
-              <select class="select select-sm" id="filterOwner"><option value="">All Owners</option></select>
-              <select class="select select-sm" id="filterSource"><option value="">All Sources</option></select>
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1 class="page-title" id="listViewTitle">All Leads</h1>
+              <span class="page-badge" id="listCount">0 leads</span>
             </div>
-            <div class="filter-info"><span id="listCount">0 leads</span></div>
+            <div class="page-header-right">
+              <!-- Bulk Move - Only visible in Storage view -->
+              <button class="btn btn-sm btn-primary" id="bulkMoveBtn" onclick="openBulkMoveModal()" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px;"><path d="M12 11v6"/><path d="M9 14l3-3 3 3"/></svg>
+                Bulk Move
+              </button>
+            </div>
           </div>
-          <div class="table-container">
-            <table class="table">
+
+          <!-- Advanced Search Panel (N5) - Fix #13 Enhanced -->
+          <div class="advanced-search-panel" id="advancedSearchPanel">
+            <div class="advanced-search-header">
+              <h3>Advanced Filters</h3>
+              <button class="btn-icon" onclick="toggleAdvancedSearch()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="advanced-search-grid">
+              <div class="form-group">
+                <label class="label">Category</label>
+                <select class="select select-sm" id="advSearchCategory"><option value="">Any Category</option></select>
+              </div>
+              <div class="form-group">
+                <label class="label">What Did We Pitch?</label>
+                <select class="select select-sm" id="advSearchWhatPitched"><option value="">Any Pitch</option></select>
+              </div>
+              <div class="form-group">
+                <label class="label">Month of Event</label>
+                <select class="select select-sm" id="advSearchMonth">
+                  <option value="">Any Month</option>
+                  <option value="January">January</option>
+                  <option value="February">February</option>
+                  <option value="March">March</option>
+                  <option value="April">April</option>
+                  <option value="May">May</option>
+                  <option value="June">June</option>
+                  <option value="July">July</option>
+                  <option value="August">August</option>
+                  <option value="September">September</option>
+                  <option value="October">October</option>
+                  <option value="November">November</option>
+                  <option value="December">December</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="label">State</label>
+                <select class="select select-sm" id="advSearchState"><option value="">Any State</option></select>
+              </div>
+              <div class="form-group">
+                <label class="label">Event Date From</label>
+                <input type="date" class="input" id="advSearchEventDateFrom">
+              </div>
+              <div class="form-group">
+                <label class="label">Event Date To</label>
+                <input type="date" class="input" id="advSearchEventDateTo">
+              </div>
+              <div class="form-group">
+                <label class="label">Follow-up Date From</label>
+                <input type="date" class="input" id="advSearchFollowupFrom">
+              </div>
+              <div class="form-group">
+                <label class="label">Follow-up Date To</label>
+                <input type="date" class="input" id="advSearchFollowupTo">
+              </div>
+              <div class="form-group">
+                <label class="label">Lead Status</label>
+                <select class="select select-sm" id="advSearchStatus"><option value="">Any Status</option></select>
+              </div>
+              <div class="form-group">
+                <label class="label">Lead Owner</label>
+                <select class="select select-sm" id="advSearchOwner"><option value="">Any Owner</option></select>
+              </div>
+              <div class="form-group">
+                <label class="label">Quote Min ($)</label>
+                <input type="number" class="input" id="advSearchQuoteMin" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="label">Quote Max ($)</label>
+                <input type="number" class="input" id="advSearchQuoteMax" placeholder="100000">
+              </div>
+            </div>
+            <div class="advanced-search-actions">
+              <button class="btn" onclick="clearAdvancedSearch()">Clear</button>
+              <button class="btn btn-primary" onclick="runAdvancedSearch()">Search</button>
+            </div>
+          </div>
+
+          <!-- Premium Filters Bar -->
+          <div class="filters-bar">
+            <div class="filters-left">
+              <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select class="filter-select" id="filterStatus">
+                  <option value="">All Statuses</option>
+                  <option value="Cold">Cold</option>
+                  <option value="Warm">Warm</option>
+                  <option value="Hot">Hot</option>
+                  <option value="Super Hot">Super Hot</option>
+                  <option value="Contract Lead">Contract Lead</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label class="filter-label">Owner</label>
+                <select class="filter-select" id="filterOwner">
+                  <option value="">All Owners</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label class="filter-label">Source</label>
+                <select class="filter-select" id="filterSource">
+                  <option value="">All Sources</option>
+                </select>
+              </div>
+
+              <button class="filter-reset" onclick="resetFilters()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+                Reset
+              </button>
+
+              <button class="filter-advanced" onclick="toggleAdvancedSearch()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                  <line x1="11" y1="8" x2="11" y2="14"/>
+                  <line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+                Advanced
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Data Table Card -->
+          <div class="table-card">
+            <table class="data-table" id="leadsTable">
               <thead>
                 <tr>
-                  <th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                  <th class="sortable" onclick="sortBy('Contact_Person')">Contact</th>
-                  <th class="sortable" onclick="sortBy('Event_Name')">Event</th>
-                  <th class="sortable" onclick="sortBy('Lead_Status')">Status</th>
-                  <th class="sortable" onclick="sortBy('Active_Quote')">Quote</th>
-                  <th class="sortable" onclick="sortBy('Lead_Owner')">Owner</th>
-                  <th class="sortable" onclick="sortBy('Date_Last_Touch')">Last Touch</th>
-                  <th>Actions</th>
+                  <th class="col-checkbox"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                  <th class="col-contact">Contact</th>
+                  <th class="col-event">Event</th>
+                  <th class="col-event-date">Event Date</th>
+                  <th class="col-location">Location</th>
+                  <th class="col-status">Status</th>
+                  <th class="col-quote">Quote</th>
+                  <th class="col-source">Source</th>
+                  <th class="col-owner">Owner</th>
+                  <th class="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody id="leadsTableBody"></tbody>
             </table>
+            <!-- Leads Pagination -->
+            <div class="leads-pagination" id="leadsPagination"></div>
           </div>
           <div class="bulk-bar" id="bulkBar">
             <span class="bulk-count"><span id="selectedCount">0</span> selected</span>
@@ -224,16 +811,70 @@
           </div>
         </div>
 
+        <!-- CLIENTS VIEW -->
+        <div class="view" id="clientsView">
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1 class="page-title">Clients</h1>
+              <span class="page-badge" id="clientsCount">0 clients</span>
+            </div>
+            <div class="page-header-right">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" id="clientsSearchInput" placeholder="Search clients..." onkeyup="filterClients()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Clients Table Card -->
+          <div class="table-card">
+            <table class="data-table clients-table">
+              <thead>
+                <tr>
+                  <th class="col-client-name sortable" onclick="sortClientsBy('name')">Client Name</th>
+                  <th class="col-last-event sortable" onclick="sortClientsBy('lastEvent')">Last Event</th>
+                  <th class="col-event-date sortable" onclick="sortClientsBy('lastEventDate')">Event Date</th>
+                  <th class="col-amount-paid sortable" onclick="sortClientsBy('lastAmount')">Amount Paid</th>
+                  <th class="col-location sortable" onclick="sortClientsBy('lastLocation')">Location</th>
+                  <th class="col-shows-booked sortable" onclick="sortClientsBy('showsBooked')">Shows Booked</th>
+                  <th class="col-last-booked sortable" onclick="sortClientsBy('lastBooked')">Last Booked</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody"></tbody>
+            </table>
+            <!-- Clients Pagination -->
+            <div class="clients-pagination" id="clientsPagination"></div>
+          </div>
+        </div>
+
         <!-- RESEARCH QUEUE VIEW -->
         <div class="view" id="researchView">
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1 class="page-title">Research Queue</h1>
+              <span class="page-badge" id="navResearchCount">0 pending</span>
+            </div>
+            <div class="page-header-right">
+              <button class="add-lead-btn" onclick="openAddResearch()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>Add Research</span>
+              </button>
+            </div>
+          </div>
+
           <div class="research-layout">
             <div class="research-list-panel">
               <div class="panel-header">
                 <h3>Pending Research</h3>
-                <button class="btn btn-sm btn-primary" onclick="openAddResearch()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Add
-                </button>
               </div>
               <div class="research-list" id="researchList"></div>
             </div>
@@ -248,6 +889,9 @@
                 <div class="research-section">
                   <div class="research-section-title">Original Bark.com Info</div>
                   <div class="research-original">
+                    <div class="research-field"><span class="research-label">Name (from Bark)</span><span class="research-value" id="researchBarkName">-</span></div>
+                    <div class="research-field"><span class="research-label">Email (partial)</span><span class="research-value" id="researchBarkEmailPartial">-</span></div>
+                    <div class="research-field"><span class="research-label">Phone (partial)</span><span class="research-value" id="researchBarkPhonePartial">-</span></div>
                     <div class="research-field"><span class="research-label">Looking For</span><span class="research-value" id="researchLookingFor">-</span></div>
                     <div class="research-field"><span class="research-label">City/Location</span><span class="research-value" id="researchCity">-</span></div>
                     <div class="research-field"><span class="research-label">Event Type</span><span class="research-value" id="researchEventType">-</span></div>
@@ -258,11 +902,43 @@
                   </div>
                 </div>
                 <div class="research-section">
-                  <div class="research-section-title">Quick Search</div>
+                  <div class="research-section-title">
+                    <span>Quick Search</span>
+                    <div class="research-timer" id="researchTimer">
+                      <span class="timer-display" id="timerDisplay">00:00</span>
+                      <button class="btn-icon btn-sm" id="timerStartBtn" onclick="toggleResearchTimer()" title="Start timer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      </button>
+                    </div>
+                  </div>
                   <div class="research-search-links">
-                    <a href="#" id="linkedinSearchLink" target="_blank" class="btn btn-sm">LinkedIn</a>
-                    <a href="#" id="googleSearchLink" target="_blank" class="btn btn-sm">Google</a>
-                    <a href="#" id="facebookSearchLink" target="_blank" class="btn btn-sm">Facebook</a>
+                    <button class="btn btn-sm" onclick="openSearch('linkedin')">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+                      LinkedIn
+                    </button>
+                    <button class="btn btn-sm" onclick="openSearch('google')">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                      Google
+                    </button>
+                    <button class="btn btn-sm" onclick="openSearch('facebook')">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                      Facebook
+                    </button>
+                    <button class="btn btn-sm" onclick="openSearch('maps')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      Maps
+                    </button>
+                    <button class="btn btn-sm btn-ghost" onclick="copyForSearch()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy Info
+                    </button>
+                  </div>
+                  <div class="research-linkedin-paste">
+                    <label class="label">Paste LinkedIn URL</label>
+                    <div class="linkedin-paste-row">
+                      <input type="text" class="input" id="linkedinUrlInput" placeholder="https://linkedin.com/in/...">
+                      <button class="btn btn-sm btn-primary" onclick="extractFromLinkedIn()">Extract</button>
+                    </div>
                   </div>
                 </div>
                 <div class="research-section">
@@ -287,25 +963,23 @@
 
         <!-- CALL HISTORY VIEW -->
         <div class="view" id="callsView">
-          <div class="calls-container">
-            <div class="calls-header">
-              <div class="calls-header-left">
-                <h2>Call History</h2>
-                <p class="calls-subtitle">Dialpad calls synced with AI grading</p>
-              </div>
-              <div class="calls-header-right">
-                <select class="select" id="callsPeriod" onchange="loadCallHistory()">
-                  <option value="1">Today</option>
-                  <option value="7" selected>Last 7 Days</option>
-                  <option value="30">Last 30 Days</option>
-                </select>
-                <button class="btn btn-primary" onclick="syncDialpadCalls()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                  Sync Dialpad
-                </button>
-              </div>
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1 class="page-title">Call History</h1>
+              <span class="page-badge">Dialpad</span>
             </div>
-            
+            <div class="page-header-right">
+              <select class="filter-select" id="callsPeriod" onchange="loadCallHistory()">
+                <option value="1" selected>Today</option>
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="calls-container">
+
             <div class="calls-stats">
               <div class="call-stat">
                 <div class="call-stat-value" id="callsTotalCount">0</div>
@@ -328,234 +1002,246 @@
             <div class="calls-list" id="callsList">
               <div class="empty-state">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:16px;opacity:0.5;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <h3>No calls synced yet</h3>
-                <p>Click "Sync Dialpad" to pull your team's call history</p>
+                <h3>No calls found</h3>
+                <p>Calls will appear here automatically</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ANALYTICS VIEW -->
-        <div class="view" id="analyticsView">
-          <div class="analytics-container">
-            <div class="analytics-header">
-              <div>
-                <h2>Analytics Dashboard</h2>
-                <p class="analytics-subtitle">Team performance & pipeline insights</p>
-              </div>
-              <div class="analytics-controls">
-                <select class="select" id="analyticsPeriod" onchange="loadAnalytics()">
-                  <option value="today">Today</option>
-                  <option value="week" selected>This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="quarter">This Quarter</option>
-                </select>
-                <button class="btn" onclick="loadAnalytics()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                  Refresh
-                </button>
-              </div>
-            </div>
-            
-            <!-- KPI CARDS -->
-            <div class="analytics-section">
-              <h3 class="analytics-section-title">Pipeline Overview</h3>
-              <div class="pipeline-cards">
-                <div class="pipeline-card">
-                  <div class="pipeline-card-value" id="analyticsTotalValue">$0</div>
-                  <div class="pipeline-card-label">Total Pipeline</div>
-                  <div class="pipeline-card-count"><span id="analyticsTotalLeads">0</span> active leads</div>
-                </div>
-                <div class="pipeline-card hot">
-                  <div class="pipeline-card-value" id="analyticsHotValue">$0</div>
-                  <div class="pipeline-card-label">Hot Leads Value</div>
-                  <div class="pipeline-card-count"><span id="analyticsHotLeads">0</span> hot leads</div>
-                </div>
-                <div class="pipeline-card booked">
-                  <div class="pipeline-card-value">
-                    <span id="analyticsBookedValue">$0</span>
-                    <span class="kpi-change" id="analyticsBookedChange"></span>
-                  </div>
-                  <div class="pipeline-card-label">Booked Revenue</div>
-                  <div class="pipeline-card-count"><span id="analyticsBookedCount">0</span> shows booked</div>
-                </div>
-                <div class="pipeline-card conversion">
-                  <div class="pipeline-card-value" id="analyticsConversion">0%</div>
-                  <div class="pipeline-card-label">Conversion Rate</div>
-                  <div class="pipeline-card-count">$ booked / $ total</div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- FUNNEL + SOURCES -->
-            <div class="analytics-row">
-              <div class="analytics-section analytics-half">
-                <h3 class="analytics-section-title">Conversion Funnel</h3>
-                <div class="funnel-container" id="funnelContainer"></div>
-              </div>
-              
-              <div class="analytics-section analytics-half">
-                <h3 class="analytics-section-title">Lead Sources (by Pipeline $)</h3>
-                <div class="sources-list" id="sourcesList"></div>
-              </div>
-            </div>
-            
-            <!-- TEAM LEADERBOARD -->
-            <div class="analytics-section">
-              <h3 class="analytics-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:20px;height:20px;margin-right:8px;"><path d="M12 15l-2 5l9-13h-6l2-5l-9 13h6z"/></svg>
-                Team Leaderboard
-              </h3>
-              <div class="leaderboard-table-container">
-                <table class="leaderboard-table">
-                  <thead>
-                    <tr>
-                      <th style="width:60px;text-align:center;">Rank</th>
-                      <th style="text-align:left;">Team Member</th>
-                      <th style="text-align:right;">$ Booked</th>
-                      <th style="text-align:center;">Deals</th>
-                      <th style="text-align:right;">Pipeline $</th>
-                      <th style="text-align:center;">Calls</th>
-                      <th style="text-align:center;">Convos</th>
-                      <th style="text-align:center;">AI Score</th>
-                      <th style="text-align:right;">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody id="leaderboardBody"></tbody>
-                </table>
-              </div>
-            </div>
-            
-            <!-- ACTIVITY TRENDS -->
-            <div class="analytics-section">
-              <h3 class="analytics-section-title">Activity Trends</h3>
-              <div class="trends-chart" id="trendsChart"></div>
-            </div>
-            
-            <!-- RECENT BOOKINGS -->
-            <div class="analytics-section">
-              <h3 class="analytics-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:20px;height:20px;margin-right:8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                Recent Bookings
-              </h3>
-              <div class="bookings-list" id="recentBookingsList"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- EOD CHECK-IN VIEW -->
+        <!-- EOD CHECK-IN VIEW - Premium Redesign -->
         <div class="view" id="eodView">
-          <div class="checkin-container">
-            <div class="checkin-header">
-              <div>
-                <h2>Daily Check-in</h2>
-                <p class="checkin-subtitle">Quick summary of your day</p>
+          <div class="eod-premium-container">
+            <!-- Hero Header -->
+            <div class="eod-hero">
+              <div class="eod-hero-content">
+                <div class="eod-greeting">
+                  <span class="eod-greeting-text" id="eodGreeting">Good evening</span>
+                  <span class="eod-user-name" id="eodUserName"></span>
+                </div>
+                <h1 class="eod-title">End of Day Check-in</h1>
+                <p class="eod-subtitle" id="checkinDate">Complete your daily reflection</p>
               </div>
-              <span class="checkin-date" id="checkinDate"></span>
-            </div>
-            
-            <div class="checkin-section">
-              <div class="checkin-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                Your Activity Today
-              </div>
-              <div class="checkin-stats">
-                <div class="checkin-stat">
-                  <div class="checkin-stat-icon calls">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                  </div>
-                  <div class="checkin-stat-value" id="checkinCalls">0</div>
-                  <div class="checkin-stat-label">Calls Made</div>
+              <div class="eod-hero-badge">
+                <div class="eod-streak-ring">
+                  <svg viewBox="0 0 36 36" class="circular-progress">
+                    <path class="progress-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    <path class="progress-fill" id="streakProgress" stroke-dasharray="75, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  </svg>
+                  <div class="streak-number" id="streakCount">0</div>
                 </div>
-                <div class="checkin-stat">
-                  <div class="checkin-stat-icon convos">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  </div>
-                  <div class="checkin-stat-value" id="checkinConvos">0</div>
-                  <div class="checkin-stat-label">Conversations</div>
-                </div>
-                <div class="checkin-stat">
-                  <div class="checkin-stat-icon followups">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
-                  </div>
-                  <div class="checkin-stat-value" id="checkinFollowups">0</div>
-                  <div class="checkin-stat-label">Follow Ups</div>
-                </div>
-                <div class="checkin-stat">
-                  <div class="checkin-stat-icon upgrades">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
-                  </div>
-                  <div class="checkin-stat-value" id="checkinUpgrades">0</div>
-                  <div class="checkin-stat-label">Leads Upgraded</div>
-                </div>
-                <div class="checkin-stat">
-                  <div class="checkin-stat-icon contracts">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                  </div>
-                  <div class="checkin-stat-value" id="checkinContracts">0</div>
-                  <div class="checkin-stat-label">Contracts</div>
-                </div>
-              </div>
-              
-              <div class="checkin-ai-score" id="checkinAiScore" style="display:none;">
-                <div class="ai-score-label">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/></svg>
-                  Avg AI Call Score
-                </div>
-                <div class="ai-score-value" id="checkinAiScoreValue">-</div>
+                <span class="streak-label">Day Streak</span>
               </div>
             </div>
-            
-            <div class="checkin-section">
-              <div class="checkin-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                How was your day?
-              </div>
-              <div class="mood-selector">
-                <button type="button" class="mood-btn" data-mood="rough" onclick="selectMood(this)" title="Rough day">
-                  <span class="mood-emoji">😫</span>
-                  <span class="mood-text">Rough</span>
-                </button>
-                <button type="button" class="mood-btn" data-mood="okay" onclick="selectMood(this)" title="It was okay">
-                  <span class="mood-emoji">😐</span>
-                  <span class="mood-text">Okay</span>
-                </button>
-                <button type="button" class="mood-btn" data-mood="good" onclick="selectMood(this)" title="Good day">
-                  <span class="mood-emoji">😊</span>
-                  <span class="mood-text">Good</span>
-                </button>
-                <button type="button" class="mood-btn" data-mood="great" onclick="selectMood(this)" title="Great day!">
-                  <span class="mood-emoji">🔥</span>
-                  <span class="mood-text">On Fire!</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="checkin-section">
-              <div class="checkin-section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                Quick Feedback <span class="optional-tag">Optional</span>
-              </div>
-              <div class="checkin-feedback">
-                <div class="form-group">
-                  <label class="label">Any roadblocks or challenges?</label>
-                  <textarea class="textarea" id="checkinRoadblocks" rows="2" placeholder="What got in your way today?"></textarea>
+
+            <!-- Auto-Tracked Stats Card -->
+            <div class="eod-card eod-stats-card">
+              <div class="eod-card-header">
+                <div class="eod-card-icon stats">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                 </div>
-                <div class="form-group">
-                  <label class="label">Wins or notable leads?</label>
-                  <textarea class="textarea" id="checkinWins" rows="2" placeholder="Any wins worth celebrating?"></textarea>
+                <div>
+                  <h2 class="eod-card-title">Today's Performance</h2>
+                  <p class="eod-card-subtitle">Auto-tracked from your activity</p>
                 </div>
               </div>
+              <div class="eod-stats-grid">
+                <div class="eod-stat">
+                  <div class="eod-stat-ring calls"><span id="checkinCalls">0</span></div>
+                  <span class="eod-stat-label">Calls</span>
+                </div>
+                <div class="eod-stat">
+                  <div class="eod-stat-ring convos"><span id="checkinConvos">0</span></div>
+                  <span class="eod-stat-label">Convos</span>
+                </div>
+                <div class="eod-stat">
+                  <div class="eod-stat-ring followups"><span id="checkinFollowups">0</span></div>
+                  <span class="eod-stat-label">Follow-ups</span>
+                </div>
+                <div class="eod-stat">
+                  <div class="eod-stat-ring upgrades"><span id="checkinUpgrades">0</span></div>
+                  <span class="eod-stat-label">Upgrades</span>
+                </div>
+                <div class="eod-stat">
+                  <div class="eod-stat-ring contracts"><span id="checkinContracts">0</span></div>
+                  <span class="eod-stat-label">Contracts</span>
+                </div>
+              </div>
+              <div class="eod-ai-insight" id="checkinAiScore" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span>AI Call Score: <strong id="checkinAiScoreValue">-</strong></span>
+              </div>
             </div>
-            
-            <div class="checkin-actions">
-              <button class="btn btn-primary btn-lg" onclick="submitCheckin()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-                Submit Check-in
+
+            <!-- Self Assessment Card -->
+            <div class="eod-card">
+              <div class="eod-card-header">
+                <div class="eod-card-icon score">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div>
+                  <h2 class="eod-card-title">Rate Your Day</h2>
+                  <p class="eod-card-subtitle">How did you perform overall?</p>
+                </div>
+                <div class="eod-weekly-avg" id="weeklyAvgScore">
+                  <span class="eod-weekly-label">Weekly Avg</span>
+                  <span class="eod-weekly-value" id="weeklyAvgValue">-</span>
+                </div>
+              </div>
+              <div class="eod-score-selector">
+                <input type="range" id="checkinScoreSlider" min="1" max="15" value="8" class="eod-slider" oninput="updateScoreDisplay(this.value)">
+                <div class="eod-score-labels">
+                  <span>1</span>
+                  <span class="eod-score-current" id="scoreDisplay">8</span>
+                  <span>15</span>
+                </div>
+                <div class="eod-score-descriptor" id="scoreDescriptor">Average Day</div>
+              </div>
+              <input type="hidden" id="checkinScore" value="8">
+            </div>
+
+            <!-- Training Card -->
+            <div class="eod-card">
+              <div class="eod-card-header">
+                <div class="eod-card-icon training">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div>
+                  <h2 class="eod-card-title">Training & Development</h2>
+                  <p class="eod-card-subtitle">Track your learning progress</p>
+                </div>
+              </div>
+              <div class="eod-training-grid">
+                <div class="eod-training-item">
+                  <label class="eod-training-label">Cardone U Training</label>
+                  <div class="eod-pill-group" id="cardoneGroup">
+                    <button type="button" class="eod-pill" data-value="0" onclick="selectPill(this, 'checkinCardone')">0 min</button>
+                    <button type="button" class="eod-pill" data-value="15" onclick="selectPill(this, 'checkinCardone')">15 min</button>
+                    <button type="button" class="eod-pill" data-value="30" onclick="selectPill(this, 'checkinCardone')">30 min</button>
+                    <button type="button" class="eod-pill" data-value="45" onclick="selectPill(this, 'checkinCardone')">45 min</button>
+                    <button type="button" class="eod-pill" data-value="60+" onclick="selectPill(this, 'checkinCardone')">60+ min</button>
+                  </div>
+                  <input type="hidden" id="checkinCardone">
+                </div>
+                <div class="eod-training-item">
+                  <label class="eod-training-label">Role Play Practice</label>
+                  <div class="eod-pill-group" id="roleplayGroup">
+                    <button type="button" class="eod-pill" data-value="0" onclick="selectPill(this, 'checkinRoleplay')">0 min</button>
+                    <button type="button" class="eod-pill" data-value="15" onclick="selectPill(this, 'checkinRoleplay')">15 min</button>
+                    <button type="button" class="eod-pill" data-value="30" onclick="selectPill(this, 'checkinRoleplay')">30 min</button>
+                    <button type="button" class="eod-pill" data-value="45" onclick="selectPill(this, 'checkinRoleplay')">45 min</button>
+                    <button type="button" class="eod-pill" data-value="60+" onclick="selectPill(this, 'checkinRoleplay')">60+ min</button>
+                  </div>
+                  <input type="hidden" id="checkinRoleplay">
+                </div>
+                <div class="eod-training-item eod-bark-item">
+                  <label class="eod-training-label">Bark Leads Found</label>
+                  <input type="number" class="eod-number-input" id="checkinBarkLeads" min="0" value="0" placeholder="0">
+                </div>
+              </div>
+            </div>
+
+            <!-- Reflection Card -->
+            <div class="eod-card">
+              <div class="eod-card-header">
+                <div class="eod-card-icon reflection">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                </div>
+                <div>
+                  <h2 class="eod-card-title">Daily Reflection</h2>
+                  <p class="eod-card-subtitle">Share your thoughts</p>
+                </div>
+              </div>
+              <div class="eod-reflection-fields">
+                <div class="eod-field">
+                  <label class="eod-field-label">Closing Phrases Used Today</label>
+                  <textarea class="eod-textarea" id="checkinClosePhrases" rows="2" placeholder="What phrases helped you move deals forward?"></textarea>
+                </div>
+                <div class="eod-field-row">
+                  <div class="eod-field">
+                    <label class="eod-field-label">Roadblocks</label>
+                    <textarea class="eod-textarea" id="checkinRoadblocks" rows="2" placeholder="Any challenges?"></textarea>
+                  </div>
+                  <div class="eod-field">
+                    <label class="eod-field-label">Wins</label>
+                    <textarea class="eod-textarea" id="checkinWins" rows="2" placeholder="Celebrate your wins!"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="eod-submit-section">
+              <button class="eod-submit-btn" onclick="submitCheckin()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                Complete Check-in
               </button>
-              <p class="checkin-note">Takes 30 seconds • Your stats are auto-tracked</p>
+              <p class="eod-submit-note">Your progress is automatically saved</p>
             </div>
           </div>
+        </div>
+
+        <!-- CONTRACTS FOLDER VIEW -->
+        <div class="view" id="contractsFolderView" style="position: relative;">
+          <!-- Page Level Loading Overlay (same as dashboard) -->
+          <div class="contracts-loading" id="contractsLoading">
+            <div class="loading-content">
+              <div class="loading-logo">
+                <div class="loading-spinner"></div>
+                <span class="loading-logo-text">BEM</span>
+              </div>
+              <div class="loading-text">Loading contracts...</div>
+            </div>
+          </div>
+
+          <!-- Page Header -->
+          <div class="page-header">
+            <div class="page-header-left">
+              <h1 class="page-title">Contracts Folder</h1>
+              <span class="page-badge" id="contractsFolderCount">0 contracts</span>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="filters-bar" style="margin-bottom: 20px;">
+            <div class="filters-left">
+              <div class="filter-group">
+                <div class="search-bar" style="width: 300px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input type="text" placeholder="Search contracts..." id="contractsSearchInput" oninput="filterContracts()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contracts Table -->
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event Name</th>
+                  <th>Client Name</th>
+                  <th>Created By</th>
+                  <th>Amount</th>
+                  <th>Date Generated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="contractsFolderTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    Loading contracts...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Contracts Pagination (same style as team leaderboard) -->
+          <div class="team-pagination" id="contractsPagination" style="display: none;"></div>
         </div>
       </div>
 
@@ -572,57 +1258,130 @@
             </div>
           </div>
           <div class="modal-tabs">
-            <button class="modal-tab active" data-tab="contact" onclick="switchModalTab('contact')">Contact Info</button>
-            <button class="modal-tab" data-tab="event" onclick="switchModalTab('event')">Event Details</button>
-            <button class="modal-tab" data-tab="company" onclick="switchModalTab('company')">Company</button>
-            <button class="modal-tab" data-tab="venue" onclick="switchModalTab('venue')">Venue</button>
-            <button class="modal-tab" data-tab="status" onclick="switchModalTab('status')">Status & Tracking</button>
-            <button class="modal-tab" data-tab="notes" onclick="switchModalTab('notes')">Notes</button>
+            <button class="modal-tab active" data-tab="details" onclick="switchModalTab('details')">Lead Details</button>
+            <button class="modal-tab" data-tab="activity" onclick="switchModalTab('activity')">Activity <span class="tab-badge" id="activityCount">0</span></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <!-- Duplicate Warning (N2) -->
+            <div class="duplicate-warning" id="duplicateWarning">
+              <div class="duplicate-warning-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Potential Duplicates Found
+              </div>
+              <div id="duplicateList"></div>
+            </div>
+
+            <!-- Validation Errors (VL1, VL2) -->
+            <div class="validation-errors" id="validationErrors">
+              <div class="validation-errors-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Please fix the following:
+              </div>
+              <ul class="validation-errors-list" id="validationErrorsList"></ul>
+            </div>
+
             <form id="leadForm">
               <input type="hidden" id="leadRowIndex">
               <input type="hidden" id="fieldRecordId">
-              <div class="tab-panel active" id="tabContact">
-                <div class="form-row"><div class="form-group"><label class="label">Contact Person *</label><input type="text" class="input" id="fieldContactPerson" required></div><div class="form-group"><label class="label">Email</label><input type="email" class="input" id="fieldEmail"></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Phone Number</label><input type="tel" class="input" id="fieldPhoneNumber"></div><div class="form-group"><label class="label">Time Zone</label><select class="select" id="fieldTimeZone"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Type of Phone</label><select class="select" id="fieldTypeOfPhone"></select></div><div class="form-group"><label class="label">Lead Owner</label><select class="select" id="fieldLeadOwner"></select></div></div>
-              </div>
-              <div class="tab-panel" id="tabEvent">
-                <div class="form-row"><div class="form-group"><label class="label">Event Name</label><input type="text" class="input" id="fieldEventName"></div><div class="form-group"><label class="label">Category</label><select class="select" id="fieldCategory"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Date of Event</label><input type="date" class="input" id="fieldDateOfEvent"></div><div class="form-group"><label class="label">Month of Event</label><select class="select" id="fieldMonthOfEvent"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Number of Guests</label><input type="number" class="input" id="fieldNumberOfGuests"></div><div class="form-group"><label class="label">What Did We Pitch?</label><select class="select" id="fieldWhatPitched"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Active Quote</label><input type="text" class="input" id="fieldActiveQuote" placeholder="$0.00"></div><div class="form-group"><label class="label">Old Quote</label><input type="text" class="input" id="fieldOldQuote" placeholder="$0.00"></div></div>
-              </div>
-              <div class="tab-panel" id="tabCompany">
-                <div class="form-row"><div class="form-group form-group-full"><label class="label">Company Name</label><input type="text" class="input" id="fieldCompanyName"></div></div>
-                <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 1</label><input type="text" class="input" id="fieldCompanyAddress1"></div></div>
-                <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 2</label><input type="text" class="input" id="fieldCompanyAddress2"></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">City</label><input type="text" class="input" id="fieldCompanyCity"></div><div class="form-group"><label class="label">State</label><select class="select" id="fieldCompanyState"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Zip Code</label><input type="text" class="input" id="fieldCompanyZip"></div><div class="form-group"></div></div>
-              </div>
-              <div class="tab-panel" id="tabVenue">
-                <div class="form-row"><div class="form-group form-group-full"><label class="label">Venue Name</label><input type="text" class="input" id="fieldVenueName"></div></div>
-                <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 1</label><input type="text" class="input" id="fieldVenueAddress1"></div></div>
-                <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 2</label><input type="text" class="input" id="fieldVenueAddress2"></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">City</label><input type="text" class="input" id="fieldVenueCity"></div><div class="form-group"><label class="label">State</label><select class="select" id="fieldVenueState"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Zip Code</label><input type="text" class="input" id="fieldVenueZip"></div><div class="form-group"></div></div>
-              </div>
-              <div class="tab-panel" id="tabStatus">
-                <div class="form-row"><div class="form-group"><label class="label">Lead Status</label><select class="select" id="fieldLeadStatus"></select></div><div class="form-group"><label class="label">Lead Source</label><select class="select" id="fieldLeadSource"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Date of Next Follow Up</label><input type="date" class="input" id="fieldDateNextFollowup"></div><div class="form-group"><label class="label">Month of Pitch Event</label><select class="select" id="fieldMonthPitchEvent"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Dhill Call List?</label><select class="select" id="fieldDhillCallList"></select></div><div class="form-group"><label class="label">D Call List</label><select class="select" id="fieldDCallList"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Create Mock Contract?</label><select class="select" id="fieldCreateMockContract"></select></div><div class="form-group"><label class="label">Quick Call Notes</label><select class="select" id="fieldQuickCallNotes"></select></div></div>
-                <div class="form-row"><div class="form-group"><label class="label">Add to Book List?</label><select class="select" id="fieldAddToBooklist"></select></div><div class="form-group"><label class="label">Add to PCL?</label><select class="select" id="fieldAddToPCL"></select></div></div>
-                <div class="form-section"><div class="form-section-title">Tracking Info (Read Only)</div>
+
+              <!-- All Lead Details in One Scrollable Form -->
+              <div class="tab-panel active" id="tabDetails">
+
+                <!-- Section 1: Contact Information -->
+                <div class="form-section">
+                  <div class="form-section-title">Contact Information</div>
+                  <div class="form-row"><div class="form-group"><label class="label">Contact Person *</label><input type="text" class="input" id="fieldContactPerson" required></div><div class="form-group"><label class="label">Email</label><input type="email" class="input" id="fieldEmail"></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Phone Number</label><input type="tel" class="input" id="fieldPhoneNumber"></div><div class="form-group"><label class="label">Time Zone</label><select class="select" id="fieldTimeZone"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Type of Phone</label><select class="select" id="fieldTypeOfPhone"></select></div><div class="form-group"><label class="label">Lead Owner</label><select class="select" id="fieldLeadOwner"></select></div></div>
+                </div>
+
+                <!-- Section 2: Event Details -->
+                <div class="form-section">
+                  <div class="form-section-title">Event Details</div>
+                  <div class="form-row"><div class="form-group"><label class="label">Event Name</label><input type="text" class="input" id="fieldEventName"></div><div class="form-group"><label class="label">Category</label><select class="select" id="fieldCategory"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Date of Event</label><input type="date" class="input" id="fieldDateOfEvent"></div><div class="form-group"><label class="label">Month of Event</label><select class="select" id="fieldMonthOfEvent"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Number of Guests</label><input type="number" class="input" id="fieldNumberOfGuests"></div><div class="form-group"><label class="label">What Did We Pitch?</label><select class="select" id="fieldWhatPitched"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Active Quote</label><input type="text" class="input" id="fieldActiveQuote" placeholder="$0.00"></div><div class="form-group"><label class="label">Old Quote</label><input type="text" class="input" id="fieldOldQuote" placeholder="$0.00"></div></div>
+                </div>
+
+                <!-- Section 3: Lead Management -->
+                <div class="form-section">
+                  <div class="form-section-title">Lead Management</div>
+                  <div class="form-row"><div class="form-group"><label class="label">Lead Status</label><select class="select" id="fieldLeadStatus"></select></div><div class="form-group"><label class="label">Lead Source</label><select class="select" id="fieldLeadSource"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Date of Next Follow Up</label><input type="date" class="input" id="fieldDateNextFollowup"></div><div class="form-group"><label class="label">Month of Pitch Event</label><select class="select" id="fieldMonthPitchEvent"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Dhill Call List?</label><select class="select" id="fieldDhillCallList"></select></div><div class="form-group"><label class="label">Quick Call Notes</label><select class="select" id="fieldQuickCallNotes"></select></div></div>
+                  <!-- Hidden fields - kept for backend compatibility -->
+                  <select class="select" id="fieldDCallList" style="display:none;"></select>
+                  <select class="select" id="fieldCreateMockContract" style="display:none;"></select>
+                  <div class="form-row"><div class="form-group"><label class="label">Add to Book List?</label><select class="select" id="fieldAddToBooklist"></select></div><div class="form-group"><label class="label">Add to PCL?</label><select class="select" id="fieldAddToPCL"></select></div></div>
+                </div>
+
+                <!-- Section 4: Company Address -->
+                <div class="form-section">
+                  <div class="form-section-title">Company Address</div>
+                  <div class="form-row"><div class="form-group form-group-full"><label class="label">Company Name</label><input type="text" class="input" id="fieldCompanyName"></div></div>
+                  <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 1</label><input type="text" class="input" id="fieldCompanyAddress1"></div></div>
+                  <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 2</label><input type="text" class="input" id="fieldCompanyAddress2"></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">City</label><input type="text" class="input" id="fieldCompanyCity"></div><div class="form-group"><label class="label">State</label><select class="select" id="fieldCompanyState"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Zip Code</label><input type="text" class="input" id="fieldCompanyZip"></div><div class="form-group"></div></div>
+                </div>
+
+                <!-- Section 5: Venue Address -->
+                <div class="form-section">
+                  <div class="form-section-title">Venue Address</div>
+                  <div class="form-row"><div class="form-group form-group-full"><label class="label">Venue Name</label><input type="text" class="input" id="fieldVenueName"></div></div>
+                  <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 1</label><input type="text" class="input" id="fieldVenueAddress1"></div></div>
+                  <div class="form-row"><div class="form-group form-group-full"><label class="label">Address Line 2</label><input type="text" class="input" id="fieldVenueAddress2"></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">City</label><input type="text" class="input" id="fieldVenueCity"></div><div class="form-group"><label class="label">State</label><select class="select" id="fieldVenueState"></select></div></div>
+                  <div class="form-row"><div class="form-group"><label class="label">Zip Code</label><input type="text" class="input" id="fieldVenueZip"></div><div class="form-group"></div></div>
+                </div>
+
+                <!-- Section 6: Notes & Follow-up -->
+                <div class="form-section">
+                  <div class="form-section-title">Notes & Follow-up</div>
+                  <div class="form-group"><label class="label">Additional Notes</label><textarea class="textarea" id="fieldAdditionalNotes" rows="4" placeholder="General notes about this lead..."></textarea></div>
+                  <div class="form-group"><label class="label">Follow Up Notes</label><textarea class="textarea" id="fieldFollowupNotes" rows="4" placeholder="Notes about follow-up activities..."></textarea></div>
+                </div>
+
+                <!-- Section 7: Tracking Info (Read Only) -->
+                <div class="form-section">
+                  <div class="form-section-title">Tracking Info (Read Only)</div>
                   <div class="form-row"><div class="form-group"><label class="label">Date Last Touch</label><input type="text" class="input input-readonly" id="fieldDateLastTouch" readonly></div><div class="form-group"><label class="label">Created Date</label><input type="text" class="input input-readonly" id="fieldCreatedDate" readonly></div></div>
                   <div class="form-row"><div class="form-group"><label class="label">Created By</label><input type="text" class="input input-readonly" id="fieldCreatedBy" readonly></div><div class="form-group"><label class="label">Last Modified By</label><input type="text" class="input input-readonly" id="fieldLastModifiedBy" readonly></div></div>
                   <div class="form-row"><div class="form-group"><label class="label">Priority Score</label><input type="text" class="input input-readonly" id="fieldPriorityScore" readonly></div><div class="form-group"><label class="label">Contract ID</label><input type="text" class="input input-readonly" id="fieldContractId" readonly></div></div>
                 </div>
               </div>
-              <div class="tab-panel" id="tabNotes">
-                <div class="form-group"><label class="label">Additional Notes</label><textarea class="textarea" id="fieldAdditionalNotes" rows="5" placeholder="General notes about this lead..."></textarea></div>
-                <div class="form-group"><label class="label">Follow Up Notes</label><textarea class="textarea" id="fieldFollowupNotes" rows="5" placeholder="Notes about follow-up activities..."></textarea></div>
+
+              <!-- Legacy tab panels kept hidden for backward compatibility -->
+              <div class="tab-panel" id="tabContact" style="display:none;"></div>
+              <div class="tab-panel" id="tabEvent" style="display:none;"></div>
+              <div class="tab-panel" id="tabCompany" style="display:none;"></div>
+              <div class="tab-panel" id="tabVenue" style="display:none;"></div>
+              <div class="tab-panel" id="tabStatus" style="display:none;"></div>
+              <div class="tab-panel" id="tabNotes" style="display:none;"></div>
+
+              <!-- Activity Tab (Phase 2) -->
+              <div class="tab-panel" id="tabActivity">
+                <div class="activity-header">
+                  <div class="activity-filter-row">
+                    <select class="select" id="activityFilter" onchange="filterActivities()">
+                      <option value="all">All Activity</option>
+                      <option value="Call">Calls</option>
+                      <option value="Email">Emails</option>
+                      <option value="Status_Change">Status Changes</option>
+                      <option value="Owner_Change">Owner Changes</option>
+                      <option value="Contract">Contracts</option>
+                      <option value="Note">Notes</option>
+                    </select>
+                    <button class="btn btn-ghost btn-sm" onclick="logManualActivity()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 5v14M5 12h14"/></svg>
+                      Log Activity
+                    </button>
+                  </div>
+                </div>
+                <div class="activity-timeline" id="activityTimeline">
+                  <div class="activity-loading">Loading activities...</div>
+                </div>
               </div>
             </form>
           </div>
@@ -686,6 +1445,201 @@
 
       <!-- Toast Container -->
       <div class="toasts" id="toastContainer"></div>
+
+      <!-- Loading Overlay - Premium Design -->
+      <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+          <div class="loading-logo">
+            <span class="loading-logo-text">BEM</span>
+            <div class="loading-spinner"></div>
+          </div>
+          <div class="loading-text" id="loadingText">Loading...</div>
+          <div class="progress-container" id="progressContainer">
+            <div class="progress-info">
+              <span class="progress-label">Progress</span>
+              <span class="progress-count" id="progressCount">0 of 0</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bulk Move Storage to Active Modal (A4) -->
+      <div class="modal-backdrop" id="bulkMoveModal" onclick="closeModalOnBackdrop(event, 'bulkMoveModal')">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Bulk Move Storage → Active</h2>
+            <button class="btn-icon" onclick="closeModal('bulkMoveModal')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p style="margin-bottom: var(--space-4); color: var(--text-secondary);">Select leads from Storage to move to Active pipeline:</p>
+            <div id="bulkMoveList" style="max-height: 400px; overflow-y: auto;"></div>
+            <div id="bulkMoveEmpty" class="empty-small">
+              Loading storage leads...
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="modal-actions-left">
+              <span id="bulkMoveSelectedCount" style="color: var(--text-muted); font-size: 0.875rem;">0 selected</span>
+            </div>
+            <div class="modal-actions-right">
+              <button type="button" class="btn" onclick="closeModal('bulkMoveModal')">Cancel</button>
+              <button type="button" class="btn btn-primary" onclick="executeBulkMove()">Move to Active</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD RESEARCH MODAL -->
+      <div class="modal-backdrop" id="addResearchModal" onclick="closeModalOnBackdrop(event, 'addResearchModal')">
+        <div class="modal">
+          <div class="modal-header">
+            <h2 class="modal-title">Add Research Item</h2>
+            <button class="btn-icon" onclick="closeModal('addResearchModal')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="addResearchForm">
+              <!-- Original Bark Info Section -->
+              <div class="modal-section-header">
+                <span style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase; font-weight: 600;">Original Bark Info</span>
+              </div>
+              <div class="form-row">
+                <div class="form-group form-group-full">
+                  <label class="label">Name (from Bark)</label>
+                  <input type="text" class="input" id="researchFormBarkName" placeholder="e.g., J*** S***">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="label">Email (partial)</label>
+                  <input type="text" class="input" id="researchFormBarkEmail" placeholder="e.g., j***@g***.com">
+                </div>
+                <div class="form-group">
+                  <label class="label">Phone (partial)</label>
+                  <input type="text" class="input" id="researchFormBarkPhone" placeholder="e.g., (813) ***-**42">
+                </div>
+              </div>
+              <hr style="border-color: var(--border); margin: 20px 0;">
+
+              <!-- Event Details -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="label">City/Location *</label>
+                  <input type="text" class="input" id="researchFormCity" placeholder="e.g., Dallas, TX" required>
+                </div>
+                <div class="form-group">
+                  <label class="label">Event Type</label>
+                  <input type="text" class="input" id="researchFormEventType" placeholder="e.g., Wedding, Corporate">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="label">Date Needed</label>
+                  <input type="date" class="input" id="researchFormDateNeeded">
+                </div>
+                <div class="form-group">
+                  <label class="label">Guest Count</label>
+                  <input type="text" class="input" id="researchFormGuestCount" placeholder="e.g., 150">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group form-group-full">
+                  <label class="label">Budget Range</label>
+                  <input type="text" class="input" id="researchFormBudget" placeholder="e.g., $5,000 - $10,000">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group form-group-full">
+                  <label class="label">Message/Notes</label>
+                  <textarea class="textarea" id="researchFormMessage" rows="3" placeholder="Additional details from lead..."></textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <div class="modal-actions-right">
+              <button type="button" class="btn" onclick="closeModal('addResearchModal')">Cancel</button>
+              <button type="button" class="btn btn-primary" onclick="submitAddResearch()">Add to Queue</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Contract Confirmation Modal -->
+      <div class="modal-backdrop" id="sendContractModal" onclick="closeSendModal()">
+        <div class="modal-content send-contract-modal" onclick="event.stopPropagation()">
+          <div class="send-modal-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+            </svg>
+          </div>
+          <h3>Send Contract</h3>
+          <p>Send this contract to the client via email?</p>
+          <div class="send-contract-details" id="sendContractDetails">
+            <!-- Populated dynamically -->
+          </div>
+          <div class="send-modal-actions">
+            <button type="button" class="btn" onclick="closeSendModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmSendContract()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;">
+                <path d="M22 2L11 13"/>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+              </svg>
+              Send Contract
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call Method Choice Modal (for users with "both" setting) -->
+      <div class="modal-backdrop" id="callMethodModal" onclick="closeCallMethodModal()">
+        <div class="modal-content call-method-modal" onclick="event.stopPropagation()">
+          <div class="call-method-header">
+            <div class="call-method-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+              </svg>
+            </div>
+            <h3>How would you like to call?</h3>
+            <p class="call-method-phone" id="callMethodPhone">---</p>
+          </div>
+          <div class="call-method-options">
+            <button type="button" class="call-option" onclick="selectCallMethod('dialpad')">
+              <div class="call-option-icon dialpad-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+              </div>
+              <div class="call-option-text">
+                <span class="call-option-label">Dialpad</span>
+                <span class="call-option-desc">Call through Dialpad app</span>
+              </div>
+            </button>
+            <button type="button" class="call-option" onclick="selectCallMethod('phone')">
+              <div class="call-option-icon phone-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2"/>
+                  <line x1="12" y1="18" x2="12" y2="18"/>
+                </svg>
+              </div>
+              <div class="call-option-text">
+                <span class="call-option-label">Cell Phone</span>
+                <span class="call-option-desc">Call from your mobile</span>
+              </div>
+            </button>
+          </div>
+          <button type="button" class="btn btn-text" onclick="closeCallMethodModal()">Cancel</button>
+        </div>
+      </div>
     </main>
   </div>
 
